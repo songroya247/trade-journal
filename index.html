@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trade Discipline Ledger</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
+<script>
+  window.addEventListener('error', function(e){
+    console.error('Page error:', e.message, 'at', e.filename + ':' + e.lineno);
+  });
+</script>
+<style>
+  :root{
+    --paper:#EDEAE0; --paper-dark:#E2DDCE; --ink:#20293A; --ink-soft:#5B6472;
+    --rule:#C6BFA9; --yes:#2F6F4E; --no:#AE3E2B; --amber:#B4801F;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper);
+    background-image:linear-gradient(var(--paper) 0px, var(--paper) 27px, var(--rule) 28px);
+    background-size:100% 28px; color:var(--ink);
+    font-family:ui-serif, Georgia, "Times New Roman", serif; padding:0 0 60px;
+  }
+  .mono{ font-family:ui-monospace,"SF Mono","Menlo","Consolas",monospace; }
+  header{ padding:22px 18px 14px; border-bottom:2px solid var(--ink); background:var(--paper); position:sticky; top:0; z-index:5; }
+  header h1{ margin:0; font-size:1.5rem; letter-spacing:0.02em; }
+  header .sub{ font-family:ui-monospace,monospace; font-size:0.72rem; color:var(--ink-soft); letter-spacing:0.08em; text-transform:uppercase; margin-top:4px; }
+
+  /* Auth screen */
+  .auth-wrap{ max-width:380px; margin:60px auto; padding:0 18px; }
+  .auth-box{ border:1px solid var(--ink); background:var(--paper-dark); padding:22px; }
+  .auth-box h2{ margin:0 0 6px; font-size:1.15rem; }
+  .auth-box p{ font-size:0.82rem; color:var(--ink-soft); margin:0 0 16px; }
+  .auth-box input{ width:100%; padding:10px; margin-bottom:10px; border:1px solid var(--ink); background:var(--paper); font-family:inherit; font-size:0.9rem; }
+  .auth-box button{ width:100%; padding:12px; background:var(--ink); color:var(--paper); border:none; font-family:ui-monospace,monospace; font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; margin-top:4px; }
+  .auth-toggle{ text-align:center; margin-top:12px; font-size:0.78rem; color:var(--ink-soft); }
+  .auth-toggle a{ color:var(--ink); cursor:pointer; text-decoration:underline; }
+  .auth-msg{ font-size:0.78rem; margin-top:10px; }
+  .auth-msg.err{ color:var(--no); }
+  .auth-msg.ok{ color:var(--yes); }
+
+  .app{ display:none; }
+  .signout{ float:right; font-family:ui-monospace,monospace; font-size:0.68rem; color:var(--ink-soft); text-decoration:underline; cursor:pointer; }
+
+  .stats{ margin:16px; border:1px solid var(--ink); background:var(--paper-dark); padding:14px 16px; }
+  .stats-title{ font-family:ui-monospace,monospace; font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:8px; }
+  .bar{ height:22px; width:100%; display:flex; border:1px solid var(--ink); overflow:hidden; font-family:ui-monospace,monospace; font-size:0.68rem; }
+  .bar-yes{ background:var(--yes); color:#fff; display:flex; align-items:center; justify-content:center; }
+  .bar-no{ background:var(--no); color:#fff; display:flex; align-items:center; justify-content:center; }
+  .stats-numbers{ display:flex; justify-content:space-between; margin-top:8px; font-family:ui-monospace,monospace; font-size:0.78rem; }
+  .stats-numbers .yes-num{ color:var(--yes); font-weight:bold; }
+  .stats-numbers .no-num{ color:var(--no); font-weight:bold; }
+  .stats-empty{ font-size:0.85rem; color:var(--ink-soft); font-style:italic; }
+
+  .new-btn{ display:block; width:calc(100% - 32px); margin:0 16px 16px; padding:14px; background:var(--ink); color:var(--paper); border:none; font-family:ui-monospace,monospace; font-size:0.82rem; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; }
+
+  .ticket-form{ margin:0 16px 20px; border:1px dashed var(--ink); background:var(--paper-dark); padding:16px; display:none; }
+  .ticket-form.open{ display:block; }
+  .ticket-form h2{ font-size:1.05rem; margin:0 0 12px; border-bottom:1px solid var(--rule); padding-bottom:8px; }
+  .field{ margin-bottom:12px; }
+  .field label{ display:block; font-family:ui-monospace,monospace; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:4px; }
+  .field input[type=text], .field input[type=date], .field textarea{ width:100%; padding:9px 10px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); font-family:inherit; font-size:0.9rem; }
+  .field textarea{ resize:vertical; min-height:50px; }
+
+  .yn-row{ display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--rule); gap:10px; }
+  .yn-row:last-of-type{ border-bottom:none; }
+  .yn-question{ font-size:0.85rem; flex:1; line-height:1.3; }
+  .yn-toggle{ display:flex; gap:6px; flex-shrink:0; }
+  .yn-btn{ font-family:ui-monospace,monospace; font-size:0.72rem; letter-spacing:0.05em; padding:7px 12px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); cursor:pointer; }
+  .yn-btn.active-yes{ background:var(--yes); color:#fff; border-color:var(--yes); }
+  .yn-btn.active-no{ background:var(--no); color:#fff; border-color:var(--no); }
+
+  .upload-box{ border:1px dashed var(--rule); padding:14px; text-align:center; font-family:ui-monospace,monospace; font-size:0.75rem; color:var(--ink-soft); cursor:pointer; margin-top:4px; }
+  .upload-preview{ width:100%; max-height:180px; object-fit:contain; margin-top:8px; border:1px solid var(--ink); display:block; }
+
+  .form-actions{ display:flex; gap:10px; margin-top:16px; }
+  .form-actions button{ flex:1; padding:12px; font-family:ui-monospace,monospace; font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; border:1px solid var(--ink); }
+  .save-btn{ background:var(--ink); color:var(--paper); }
+  .cancel-btn{ background:var(--paper); color:var(--ink); }
+
+  .sort-bar{ display:flex; align-items:center; justify-content:space-between; margin:0 16px 12px; font-family:ui-monospace,monospace; font-size:0.72rem; color:var(--ink-soft); }
+  .sort-bar select{ font-family:ui-monospace,monospace; font-size:0.72rem; padding:6px 8px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); }
+
+  .tickets{ margin:0 16px; display:flex; flex-direction:column; gap:14px; }
+  .ticket{ position:relative; border:1px solid var(--ink); background:var(--paper); padding:14px 14px 12px; }
+  .ticket-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .ticket-symbol{ font-size:1.05rem; font-weight:bold; }
+  .ticket-date{ font-family:ui-monospace,monospace; font-size:0.68rem; color:var(--ink-soft); }
+  .stamp{ font-family:ui-monospace,monospace; font-size:0.68rem; font-weight:bold; letter-spacing:0.08em; padding:4px 9px; border:2px solid; transform:rotate(-4deg); white-space:nowrap; }
+  .stamp.disciplined{ color:var(--yes); border-color:var(--yes); }
+  .stamp.impulse{ color:var(--no); border-color:var(--no); }
+  .stamp.mixed{ color:var(--amber); border-color:var(--amber); }
+  .ticket-notes{ font-size:0.82rem; color:var(--ink-soft); margin:8px 0; font-style:italic; }
+  .ticket-answers{ display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; margin:10px 0; font-size:0.76rem; }
+  .ans{ display:flex; justify-content:space-between; gap:6px; }
+  .ans span:first-child{ color:var(--ink-soft); }
+  .ans .y{ color:var(--yes); font-weight:bold; }
+  .ans .n{ color:var(--no); font-weight:bold; }
+  .ticket-score{ font-family:ui-monospace,monospace; font-size:0.72rem; margin-top:8px; padding-top:8px; border-top:1px dashed var(--rule); display:flex; justify-content:space-between; align-items:center; }
+  .ticket-img{ width:100%; max-height:220px; object-fit:cover; margin-top:10px; border:1px solid var(--ink); cursor:pointer; }
+  .ticket-del{ background:none; border:none; color:var(--ink-soft); font-family:ui-monospace,monospace; font-size:0.68rem; text-decoration:underline; cursor:pointer; padding:0; margin-top:10px; }
+  .empty-state{ margin:40px 16px; text-align:center; color:var(--ink-soft); font-size:0.9rem; }
+  .lightbox{ display:none; position:fixed; inset:0; background:rgba(32,41,58,0.92); z-index:50; align-items:center; justify-content:center; padding:20px; }
+  .lightbox.open{ display:flex; }
+  .lightbox img{ max-width:100%; max-height:100%; border:2px solid var(--paper); }
+  .loading{ text-align:center; padding:40px; color:var(--ink-soft); font-family:ui-monospace,monospace; font-size:0.8rem; }
+</style>
+</head>
+<body>
+
+<!-- ====== FILL THESE IN ====== -->
+<script>
+  const SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";
+  const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+</script>
+<!-- ============================ -->
+
+<header>
+  <h1>Trade Discipline Ledger</h1>
+  <div class="sub">Execution log &middot; Yes / No only</div>
+</header>
+
+<div class="auth-wrap" id="authWrap">
+  <div class="auth-box">
+    <h2 id="authTitle">Sign in</h2>
+    <p id="authSub">Your private ledger. Only you can see it.</p>
+    <input type="text" id="authEmail" placeholder="Email">
+    <input type="password" id="authPassword" placeholder="Password">
+    <button id="authSubmit">Sign in</button>
+    <div class="auth-toggle">
+      <span id="authToggleText">No account yet?</span> <a id="authToggleLink">Sign up</a>
+    </div>
+    <div class="auth-msg" id="authMsg"></div>
+  </div>
+</div>
+
+<div class="app" id="app">
+  <div style="margin:0 16px;"><span class="signout" id="signOutBtn">Sign out</span></div>
+
+  <div class="stats" id="statsBox">
+    <div class="stats-title">Overall — Yes vs No</div>
+    <div id="statsContent"><div class="stats-empty">Log your first trade to see stats.</div></div>
+  </div>
+
+  <button class="new-btn" id="newTicketBtn">+ New Trade Ticket</button>
+
+  <div class="ticket-form" id="ticketForm">
+    <h2>New Ticket</h2>
+    <div class="field"><label>Symbol / Pair</label><input type="text" id="f-symbol" placeholder="e.g. EURUSD, AAPL"></div>
+    <div class="field"><label>Date</label><input type="date" id="f-date"></div>
+    <div class="field"><label>Notes (optional)</label><textarea id="f-notes" placeholder="Any context on this trade..."></textarea></div>
+    <div class="field">
+      <label>Screenshot (optional)</label>
+      <div class="upload-box" id="uploadBox">Tap to attach chart screenshot</div>
+      <input type="file" id="f-image" accept="image/*" style="display:none;">
+      <img id="imgPreview" class="upload-preview" style="display:none;">
+    </div>
+    <div class="field" style="margin-top:16px;">
+      <div class="yn-row" data-q="waitedSignal"><div class="yn-question">Did I wait for my signal?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+      <div class="yn-row" data-q="plannedLocation"><div class="yn-question">Did I enter at my planned location?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+      <div class="yn-row" data-q="chasedBreakout"><div class="yn-question">Did I chase the breakout?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+      <div class="yn-row" data-q="fomo"><div class="yn-question">Did I enter because I feared missing the move?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+      <div class="yn-row" data-q="followedExit"><div class="yn-question">Did I follow my exit rules?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+    </div>
+    <div class="form-actions">
+      <button class="cancel-btn" id="cancelBtn">Cancel</button>
+      <button class="save-btn" id="saveBtn">Save Ticket</button>
+    </div>
+  </div>
+
+  <div class="sort-bar">
+    <span id="tradeCount">0 trades</span>
+    <select id="sortSelect">
+      <option value="date-desc">Newest first</option>
+      <option value="date-asc">Oldest first</option>
+      <option value="score-desc">Highest yes %</option>
+      <option value="score-asc">Lowest yes %</option>
+      <option value="symbol">Symbol A–Z</option>
+    </select>
+  </div>
+
+  <div class="tickets" id="ticketsList"><div class="loading">Loading ledger...</div></div>
+</div>
+
+<div class="lightbox" id="lightbox"><img id="lightboxImg" src=""></div>
+
+<script>
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const QUESTIONS = [
+  { key:'waitedSignal', label:'Waited for signal' },
+  { key:'plannedLocation', label:'Entered at planned location' },
+  { key:'chasedBreakout', label:'Chased the breakout' },
+  { key:'fomo', label:'Entered from FOMO' },
+  { key:'followedExit', label:'Followed exit rules' }
+];
+
+let currentUser = null;
+let trades = [];
+let currentAnswers = {};
+let currentImageFile = null;
+let currentImagePreviewUrl = null;
+let isSignUpMode = false;
+
+const authWrap = document.getElementById('authWrap');
+const app = document.getElementById('app');
+const authEmail = document.getElementById('authEmail');
+const authPassword = document.getElementById('authPassword');
+const authSubmit = document.getElementById('authSubmit');
+const authMsg = document.getElementById('authMsg');
+const authTitle = document.getElementById('authTitle');
+const authToggleText = document.getElementById('authToggleText');
+const authToggleLink = document.getElementById('authToggleLink');
+
+authToggleLink.addEventListener('click', () => {
+  isSignUpMode = !isSignUpMode;
+  authTitle.textContent = isSignUpMode ? 'Create account' : 'Sign in';
+  authSubmit.textContent = isSignUpMode ? 'Sign up' : 'Sign in';
+  authToggleText.textContent = isSignUpMode ? 'Already have an account?' : 'No account yet?';
+  authToggleLink.textContent = isSignUpMode ? 'Sign in' : 'Sign up';
+  authMsg.textContent = '';
+});
+
+authSubmit.addEventListener('click', async () => {
+  const email = authEmail.value.trim();
+  const password = authPassword.value;
+  if(!email || !password){ authMsg.textContent = 'Enter email and password.'; authMsg.className='auth-msg err'; return; }
+  authSubmit.disabled = true;
+  authMsg.textContent = '';
+  try{
+    if(isSignUpMode){
+      const { error } = await supabaseClient.auth.signUp({ email, password });
+      if(error) throw error;
+      authMsg.textContent = 'Account created. Check your email if confirmation is required, then sign in.';
+      authMsg.className = 'auth-msg ok';
+    } else {
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if(error) throw error;
+    }
+  } catch(err){
+    authMsg.textContent = err.message || 'Something went wrong.';
+    authMsg.className = 'auth-msg err';
+  } finally {
+    authSubmit.disabled = false;
+  }
+});
+
+document.getElementById('signOutBtn').addEventListener('click', async () => {
+  await supabaseClient.auth.signOut();
+});
+
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  currentUser = session ? session.user : null;
+  if(currentUser){
+    authWrap.style.display = 'none';
+    app.style.display = 'block';
+    loadTrades();
+  } else {
+    authWrap.style.display = 'block';
+    app.style.display = 'none';
+  }
+});
+
+// ---- Ticket form ----
+const ticketForm = document.getElementById('ticketForm');
+const newTicketBtn = document.getElementById('newTicketBtn');
+const cancelBtn = document.getElementById('cancelBtn');
+const saveBtn = document.getElementById('saveBtn');
+const uploadBox = document.getElementById('uploadBox');
+const fileInput = document.getElementById('f-image');
+const imgPreview = document.getElementById('imgPreview');
+const ticketsList = document.getElementById('ticketsList');
+const statsContent = document.getElementById('statsContent');
+const sortSelect = document.getElementById('sortSelect');
+const tradeCount = document.getElementById('tradeCount');
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightboxImg');
+
+function resetForm(){
+  document.getElementById('f-symbol').value = '';
+  document.getElementById('f-notes').value = '';
+  document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+  currentAnswers = {};
+  currentImageFile = null;
+  currentImagePreviewUrl = null;
+  imgPreview.style.display = 'none';
+  imgPreview.src = '';
+  document.querySelectorAll('.yn-btn').forEach(b => b.classList.remove('active-yes','active-no'));
+}
+
+newTicketBtn.addEventListener('click', () => {
+  resetForm();
+  ticketForm.classList.add('open');
+  ticketForm.scrollIntoView({behavior:'smooth', block:'start'});
+});
+cancelBtn.addEventListener('click', () => ticketForm.classList.remove('open'));
+
+document.querySelectorAll('.yn-row').forEach(row => {
+  const q = row.dataset.q;
+  row.querySelectorAll('.yn-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const val = btn.dataset.val;
+      currentAnswers[q] = (val === 'yes');
+      row.querySelectorAll('.yn-btn').forEach(b => b.classList.remove('active-yes','active-no'));
+      btn.classList.add(val === 'yes' ? 'active-yes' : 'active-no');
+    });
+  });
+});
+
+uploadBox.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      const maxW = 900;
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => {
+        currentImageFile = blob;
+        currentImagePreviewUrl = URL.createObjectURL(blob);
+        imgPreview.src = currentImagePreviewUrl;
+        imgPreview.style.display = 'block';
+      }, 'image/jpeg', 0.7);
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+saveBtn.addEventListener('click', async () => {
+  const symbol = document.getElementById('f-symbol').value.trim() || 'Untitled';
+  const trade_date = document.getElementById('f-date').value || new Date().toISOString().slice(0,10);
+  const notes = document.getElementById('f-notes').value.trim();
+
+  if(Object.keys(currentAnswers).length < QUESTIONS.length){
+    alert('Please answer all 5 questions with Yes or No.');
+    return;
+  }
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'SAVING...';
+  try{
+    let image_path = null;
+    if(currentImageFile){
+      const filename = `${currentUser.id}/${Date.now()}.jpg`;
+      const { error: uploadErr } = await supabaseClient.storage
+        .from('screenshots')
+        .upload(filename, currentImageFile, { contentType:'image/jpeg' });
+      if(uploadErr) throw uploadErr;
+      image_path = filename;
+    }
+
+    const { error: insertErr } = await supabaseClient.from('trades').insert({
+      user_id: currentUser.id,
+      symbol, trade_date, notes,
+      answers: currentAnswers,
+      image_path
+    });
+    if(insertErr) throw insertErr;
+
+    ticketForm.classList.remove('open');
+    await loadTrades();
+  } catch(err){
+    console.error(err);
+    alert('Could not save trade: ' + (err.message || 'unknown error'));
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save Ticket';
+  }
+});
+
+async function deleteTrade(id, imagePath){
+  if(!confirm('Delete this trade ticket? This cannot be undone.')) return;
+  try{
+    if(imagePath){
+      await supabaseClient.storage.from('screenshots').remove([imagePath]);
+    }
+    const { error } = await supabaseClient.from('trades').delete().eq('id', id);
+    if(error) throw error;
+    await loadTrades();
+  } catch(err){
+    console.error(err);
+    alert('Could not delete trade.');
+  }
+}
+
+function scoreOf(trade){
+  const yes = Object.values(trade.answers).filter(v => v === true).length;
+  const no = QUESTIONS.length - yes;
+  return { yes, no, pct: Math.round((yes / QUESTIONS.length) * 100) };
+}
+
+function renderStats(){
+  if(trades.length === 0){
+    statsContent.innerHTML = '<div class="stats-empty">Log your first trade to see stats.</div>';
+    return;
+  }
+  let totalYes = 0, totalNo = 0;
+  trades.forEach(t => Object.values(t.answers).forEach(v => v ? totalYes++ : totalNo++));
+  const total = totalYes + totalNo;
+  const yesPct = Math.round((totalYes/total)*100);
+  const noPct = 100 - yesPct;
+  statsContent.innerHTML = `
+    <div class="bar">
+      ${yesPct > 0 ? `<div class="bar-yes" style="width:${yesPct}%">${yesPct}%</div>` : ''}
+      ${noPct > 0 ? `<div class="bar-no" style="width:${noPct}%">${noPct}%</div>` : ''}
+    </div>
+    <div class="stats-numbers">
+      <span class="yes-num">YES ${totalYes} (${yesPct}%)</span>
+      <span class="no-num">NO ${totalNo} (${noPct}%)</span>
+    </div>`;
+}
+
+function stampFor(pct){
+  if(pct >= 80) return { cls:'disciplined', text:'DISCIPLINED' };
+  if(pct <= 40) return { cls:'impulse', text:'IMPULSE' };
+  return { cls:'mixed', text:'MIXED' };
+}
+
+async function renderTickets(){
+  tradeCount.textContent = trades.length + (trades.length === 1 ? ' trade' : ' trades');
+  if(trades.length === 0){
+    ticketsList.innerHTML = '<div class="empty-state">No trades logged yet. Tap "New Trade Ticket" to start your ledger.</div>';
+    return;
+  }
+
+  const sortMode = sortSelect.value;
+  let sorted = [...trades];
+  sorted.forEach(t => t._score = scoreOf(t));
+  if(sortMode === 'date-desc') sorted.sort((a,b) => b.trade_date.localeCompare(a.trade_date));
+  else if(sortMode === 'date-asc') sorted.sort((a,b) => a.trade_date.localeCompare(b.trade_date));
+  else if(sortMode === 'score-desc') sorted.sort((a,b) => b._score.pct - a._score.pct);
+  else if(sortMode === 'score-asc') sorted.sort((a,b) => a._score.pct - b._score.pct);
+  else if(sortMode === 'symbol') sorted.sort((a,b) => a.symbol.localeCompare(b.symbol));
+
+  // Resolve signed URLs for images in parallel
+  const withUrls = await Promise.all(sorted.map(async t => {
+    if(t.image_path){
+      const { data } = await supabaseClient.storage.from('screenshots').createSignedUrl(t.image_path, 3600);
+      t._imageUrl = data ? data.signedUrl : null;
+    }
+    return t;
+  }));
+
+  ticketsList.innerHTML = withUrls.map(t => {
+    const s = t._score;
+    const stamp = stampFor(s.pct);
+    const answersHtml = QUESTIONS.map(q => {
+      const val = t.answers[q.key];
+      return `<div class="ans"><span>${q.label}</span><span class="${val ? 'y':'n'}">${val ? 'YES':'NO'}</span></div>`;
+    }).join('');
+    return `
+      <div class="ticket">
+        <div class="ticket-top">
+          <div><div class="ticket-symbol">${escapeHtml(t.symbol)}</div><div class="ticket-date">${t.trade_date}</div></div>
+          <div class="stamp ${stamp.cls}">${stamp.text}</div>
+        </div>
+        ${t.notes ? `<div class="ticket-notes">${escapeHtml(t.notes)}</div>` : ''}
+        <div class="ticket-answers">${answersHtml}</div>
+        <div class="ticket-score mono"><span>YES ${s.yes}/5 &middot; NO ${s.no}/5</span><span>${s.pct}%</span></div>
+        ${t._imageUrl ? `<img class="ticket-img" src="${t._imageUrl}" data-full="${t._imageUrl}">` : ''}
+        <button class="ticket-del" data-id="${t.id}" data-img="${t.image_path || ''}">Delete ticket</button>
+      </div>`;
+  }).join('');
+
+  ticketsList.querySelectorAll('.ticket-img').forEach(img => {
+    img.addEventListener('click', () => { lightboxImg.src = img.dataset.full; lightbox.classList.add('open'); });
+  });
+  ticketsList.querySelectorAll('.ticket-del').forEach(btn => {
+    btn.addEventListener('click', () => deleteTrade(btn.dataset.id, btn.dataset.img || null));
+  });
+}
+
+lightbox.addEventListener('click', () => lightbox.classList.remove('open'));
+sortSelect.addEventListener('change', renderTickets);
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+async function loadTrades(){
+  ticketsList.innerHTML = '<div class="loading">Loading ledger...</div>';
+  try{
+    const { data, error } = await supabaseClient
+      .from('trades')
+      .select('*')
+      .eq('user_id', currentUser.id);
+    if(error) throw error;
+    trades = data || [];
+  } catch(err){
+    console.error('Failed to load trades', err);
+    trades = [];
+  }
+  renderStats();
+  renderTickets();
+}
+</script>
+
+</body>
+</html>
