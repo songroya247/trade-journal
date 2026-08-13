@@ -227,11 +227,15 @@
       </div>
     </div>
 
-    <div class="form-section-title">Execution Checklist</div>
+    <div class="form-section-title">Execution Checklist — At Entry</div>
     <div class="yn-row" data-q="waitedSignal"><div class="yn-question">Did I wait for my signal?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
     <div class="yn-row" data-q="plannedLocation"><div class="yn-question">Did I enter at my planned location?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+    <div class="yn-row" data-q="positionSizing"><div class="yn-question">Did I follow my position sizing rule?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
     <div class="yn-row" data-q="chasedBreakout"><div class="yn-question">Did I chase the breakout?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
     <div class="yn-row" data-q="fomo"><div class="yn-question">Did I enter because I feared missing the move?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+    <div class="yn-row" data-q="greedy"><div class="yn-question">Was I greedy (oversized the trade or pushed beyond my plan)?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+
+    <div class="form-section-title">Execution Checklist — At Exit <span style="text-transform:none; font-style:italic;">(fill in once the trade closes)</span></div>
     <div class="yn-row" data-q="followedExit"><div class="yn-question">Did I follow my exit rules?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
 
     <div class="form-section-title">Psychology</div>
@@ -278,12 +282,15 @@
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const QUESTIONS = [
-  { key:'waitedSignal', label:'Waited for signal', goodWhen:true },
-  { key:'plannedLocation', label:'Entered at planned location', goodWhen:true },
-  { key:'chasedBreakout', label:'Chased the breakout', goodWhen:false },
-  { key:'fomo', label:'Entered from FOMO', goodWhen:false },
-  { key:'followedExit', label:'Followed exit rules', goodWhen:true }
+  { key:'waitedSignal', label:'Waited for signal', goodWhen:true, phase:'entry' },
+  { key:'plannedLocation', label:'Entered at planned location', goodWhen:true, phase:'entry' },
+  { key:'positionSizing', label:'Followed position sizing rule', goodWhen:true, phase:'entry' },
+  { key:'chasedBreakout', label:'Chased the breakout', goodWhen:false, phase:'entry' },
+  { key:'fomo', label:'Entered from FOMO', goodWhen:false, phase:'entry' },
+  { key:'greedy', label:'Was greedy', goodWhen:false, phase:'entry' },
+  { key:'followedExit', label:'Followed exit rules', goodWhen:true, phase:'exit' }
 ];
+const ENTRY_QUESTIONS = QUESTIONS.filter(q => q.phase === 'entry');
 
 const CATEGORIES = {
   'Forex': ['EUR/USD','GBP/USD','USD/JPY','USD/CHF','AUD/USD','USD/CAD','NZD/USD','EUR/GBP','EUR/JPY','GBP/JPY','EUR/CHF','AUD/JPY','CHF/JPY','EUR/AUD','GBP/AUD','CAD/JPY','NZD/JPY','GBP/CAD','EUR/CAD','AUD/CAD','AUD/NZD','AUD/CHF','GBP/CHF','GBP/NZD','EUR/NZD','USD/MXN','USD/ZAR','USD/TRY','USD/SEK','USD/NOK','USD/SGD','USD/CNH'],
@@ -292,7 +299,7 @@ const CATEGORIES = {
   'Crypto': ['BTC/USD','ETH/USD','XRP/USD','LTC/USD','BNB/USD','SOL/USD','ADA/USD','DOGE/USD','DOT/USD','AVAX/USD','MATIC/USD','LINK/USD'],
   'Stocks': ['AAPL','MSFT','GOOGL','AMZN','TSLA','META','NVDA','NFLX','JPM','V','MA','DIS','BA','KO','PEP','WMT','XOM','CVX','JNJ','PG','INTC','AMD','UNH','HD','BRK.B']
 };
-const PRE_EMOTIONS = ['😌 Calm','😎 Confident','😰 Anxious','🏃 FOMO','⏱️ Impatient','😠 Revenge','😴 Bored','🤩 Excited','😐 Neutral'];
+const PRE_EMOTIONS = ['😌 Calm','😎 Confident','😰 Anxious','🏃 FOMO','⏱️ Impatient','😠 Revenge','😴 Bored','🤩 Excited','🤑 Greedy','😐 Neutral'];
 const POST_EMOTIONS = ['😊 Satisfied','😮\u200d💨 Relieved','😔 Regretful','😤 Frustrated','😰 Anxious','😌 Calm','🤩 Excited','😶 Numb'];
 const CONFIDENCE_LEVELS = [
   { value:'1', label:'1 😬' }, { value:'2', label:'2 🙁' }, { value:'3', label:'3 😐' },
@@ -633,7 +640,8 @@ saveBtn.addEventListener('click', async () => {
 
   if(!currentCategory){ alert('Pick a category.'); return; }
   if(!symbol){ alert('Pick or type a symbol.'); return; }
-  if(Object.keys(currentAnswers).length < QUESTIONS.length){ alert('Please answer all 5 checklist questions (you can revise them later via Edit).'); return; }
+  const missingEntry = ENTRY_QUESTIONS.some(q => currentAnswers[q.key] === undefined);
+  if(missingEntry){ alert('Please answer the "At Entry" checklist questions. The "At Exit" question can be left for later if the trade is still open.'); return; }
 
   const isEdit = !!editingTradeId;
   saveBtn.disabled = true;
@@ -702,12 +710,14 @@ async function deleteTrade(id, imgBefore, imgAfter){
 }
 
 function scoreOf(trade){
-  let good = 0;
+  let good = 0, answered = 0;
   QUESTIONS.forEach(q => {
     const val = trade.answers[q.key];
+    if(val === undefined) return;
+    answered++;
     if(val === q.goodWhen) good++;
   });
-  return { good, bad: QUESTIONS.length - good, pct: Math.round((good / QUESTIONS.length) * 100) };
+  return { good, bad: answered - good, answered, pct: answered ? Math.round((good / answered) * 100) : 0 };
 }
 
 function renderStats(){
@@ -719,10 +729,15 @@ function renderStats(){
   trades.forEach(t => {
     QUESTIONS.forEach(q => {
       const val = t.answers[q.key];
+      if(val === undefined) return;
       if(val === q.goodWhen) totalGood++; else totalBad++;
     });
   });
   const total = totalGood + totalBad;
+  if(total === 0){
+    statsContent.innerHTML = '<div class="stats-empty">Log your first trade to see stats.</div>';
+    return;
+  }
   const goodPct = Math.round((totalGood/total)*100);
   const badPct = 100 - goodPct;
   statsContent.innerHTML = `
@@ -735,6 +750,7 @@ function renderStats(){
       <span class="no-num">SLIPS ${totalBad} (${badPct}%)</span>
     </div>`;
 }
+
 
 function stampFor(pct){
   if(pct >= 80) return { cls:'disciplined', text:'DISCIPLINED' };
@@ -772,9 +788,13 @@ async function renderTickets(){
 
   ticketsList.innerHTML = withUrls.map(t => {
     const s = t._score;
-    const stamp = stampFor(s.pct);
+    const isOpen = t.answers['followedExit'] === undefined;
+    const stamp = isOpen ? { cls:'mixed', text:'OPEN' } : stampFor(s.pct);
     const answersHtml = QUESTIONS.map(q => {
       const val = t.answers[q.key];
+      if(val === undefined){
+        return `<div class="ans"><span>${q.label}</span><span style="color:var(--amber); font-weight:bold;">PENDING</span></div>`;
+      }
       const isGood = val === q.goodWhen;
       return `<div class="ans"><span>${q.label}</span><span class="${isGood ? 'good':'bad'}">${val ? 'YES':'NO'}</span></div>`;
     }).join('');
@@ -802,7 +822,7 @@ async function renderTickets(){
         </div>
         ${t.notes ? `<div class="ticket-notes">${escapeHtml(t.notes)}</div>` : ''}
         <div class="ticket-answers">${answersHtml}</div>
-        <div class="ticket-score mono"><span>DISCIPLINED ${s.good}/5 &middot; SLIPS ${s.bad}/5</span><span>${s.pct}%</span></div>
+        <div class="ticket-score mono"><span>DISCIPLINED ${s.good}/${s.answered} &middot; SLIPS ${s.bad}/${s.answered}</span><span>${s.pct}%</span></div>
         ${psychHtml}
         ${imgsHtml}
         <div style="display:flex; gap:16px; margin-top:10px;">
