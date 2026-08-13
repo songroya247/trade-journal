@@ -58,6 +58,7 @@
 
   .stats{ margin:16px; border:1px solid var(--ink); background:var(--paper-dark); padding:14px 16px; }
   .stats-title{ font-family:ui-monospace,monospace; font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:8px; }
+  .stats-note{ font-size:0.72rem; color:var(--ink-soft); font-style:italic; margin-top:8px; }
   .bar{ height:22px; width:100%; display:flex; border:1px solid var(--ink); overflow:hidden; font-family:ui-monospace,monospace; font-size:0.68rem; }
   .bar-yes{ background:var(--yes); color:#fff; display:flex; align-items:center; justify-content:center; }
   .bar-no{ background:var(--no); color:#fff; display:flex; align-items:center; justify-content:center; }
@@ -70,11 +71,19 @@
 
   .ticket-form{ margin:0 16px 20px; border:1px dashed var(--ink); background:var(--paper-dark); padding:16px; display:none; }
   .ticket-form.open{ display:block; }
-  .ticket-form h2{ font-size:1.05rem; margin:0 0 12px; border-bottom:1px solid var(--rule); padding-bottom:8px; }
+  .ticket-form h2{ font-size:1.05rem; margin:0 0 4px; }
+  .form-section-title{ font-family:ui-monospace,monospace; font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); margin:20px 0 10px; padding-top:14px; border-top:1px solid var(--rule); }
+  .form-section-title:first-of-type{ border-top:none; padding-top:0; margin-top:14px; }
   .field{ margin-bottom:12px; }
-  .field label{ display:block; font-family:ui-monospace,monospace; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:4px; }
-  .field input[type=text], .field input[type=date], .field textarea{ width:100%; padding:9px 10px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); font-family:inherit; font-size:0.9rem; }
+  .field label{ display:block; font-family:ui-monospace,monospace; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; }
+  .field input[type=text], .field input[type=date], .field textarea, .field select{ width:100%; padding:9px 10px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); font-family:inherit; font-size:0.9rem; }
   .field textarea{ resize:vertical; min-height:50px; }
+
+  .chip-row{ display:flex; flex-wrap:wrap; gap:6px; }
+  .chip{ font-family:ui-monospace,monospace; font-size:0.72rem; padding:8px 12px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); cursor:pointer; }
+  .chip.active{ background:var(--ink); color:var(--paper); }
+  .chip.active-yes{ background:var(--yes); color:#fff; border-color:var(--yes); }
+  .chip.active-no{ background:var(--no); color:#fff; border-color:var(--no); }
 
   .yn-row{ display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--rule); gap:10px; }
   .yn-row:last-of-type{ border-bottom:none; }
@@ -84,10 +93,12 @@
   .yn-btn.active-yes{ background:var(--yes); color:#fff; border-color:var(--yes); }
   .yn-btn.active-no{ background:var(--no); color:#fff; border-color:var(--no); }
 
-  .upload-box{ border:1px dashed var(--rule); padding:14px; text-align:center; font-family:ui-monospace,monospace; font-size:0.75rem; color:var(--ink-soft); cursor:pointer; margin-top:4px; }
-  .upload-preview{ width:100%; max-height:180px; object-fit:contain; margin-top:8px; border:1px solid var(--ink); display:block; }
+  .upload-row{ display:flex; gap:10px; }
+  .upload-col{ flex:1; }
+  .upload-box{ border:1px dashed var(--rule); padding:12px 8px; text-align:center; font-family:ui-monospace,monospace; font-size:0.68rem; color:var(--ink-soft); cursor:pointer; margin-top:4px; }
+  .upload-preview{ width:100%; max-height:140px; object-fit:contain; margin-top:8px; border:1px solid var(--ink); display:block; }
 
-  .form-actions{ display:flex; gap:10px; margin-top:16px; }
+  .form-actions{ display:flex; gap:10px; margin-top:18px; }
   .form-actions button{ flex:1; padding:12px; font-family:ui-monospace,monospace; font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; border:1px solid var(--ink); }
   .save-btn{ background:var(--ink); color:var(--paper); }
   .cancel-btn{ background:var(--paper); color:var(--ink); }
@@ -99,6 +110,7 @@
   .ticket{ position:relative; border:1px solid var(--ink); background:var(--paper); padding:14px 14px 12px; }
   .ticket-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
   .ticket-symbol{ font-size:1.05rem; font-weight:bold; }
+  .ticket-category{ font-family:ui-monospace,monospace; font-size:0.64rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.05em; }
   .ticket-date{ font-family:ui-monospace,monospace; font-size:0.68rem; color:var(--ink-soft); }
   .stamp{ font-family:ui-monospace,monospace; font-size:0.68rem; font-weight:bold; letter-spacing:0.08em; padding:4px 9px; border:2px solid; transform:rotate(-4deg); white-space:nowrap; }
   .stamp.disciplined{ color:var(--yes); border-color:var(--yes); }
@@ -108,10 +120,20 @@
   .ticket-answers{ display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; margin:10px 0; font-size:0.76rem; }
   .ans{ display:flex; justify-content:space-between; gap:6px; }
   .ans span:first-child{ color:var(--ink-soft); }
-  .ans .y{ color:var(--yes); font-weight:bold; }
-  .ans .n{ color:var(--no); font-weight:bold; }
+  .ans .good{ color:var(--yes); font-weight:bold; }
+  .ans .bad{ color:var(--no); font-weight:bold; }
   .ticket-score{ font-family:ui-monospace,monospace; font-size:0.72rem; margin-top:8px; padding-top:8px; border-top:1px dashed var(--rule); display:flex; justify-content:space-between; align-items:center; }
-  .ticket-img{ width:100%; max-height:220px; object-fit:cover; margin-top:10px; border:1px solid var(--ink); cursor:pointer; }
+
+  .psych-block{ margin-top:10px; padding-top:10px; border-top:1px dashed var(--rule); font-size:0.78rem; }
+  .psych-row{ display:flex; justify-content:space-between; margin-bottom:4px; }
+  .psych-row span:first-child{ color:var(--ink-soft); }
+  .psych-reflection{ margin-top:8px; font-size:0.8rem; font-style:italic; color:var(--ink); background:var(--paper-dark); padding:8px 10px; border-left:2px solid var(--amber); }
+
+  .img-pair{ display:flex; gap:8px; margin-top:10px; }
+  .img-pair-col{ flex:1; }
+  .img-pair-label{ font-family:ui-monospace,monospace; font-size:0.62rem; color:var(--ink-soft); text-transform:uppercase; margin-bottom:4px; }
+  .ticket-img{ width:100%; height:120px; object-fit:cover; border:1px solid var(--ink); cursor:pointer; display:block; }
+
   .ticket-del{ background:none; border:none; color:var(--ink-soft); font-family:ui-monospace,monospace; font-size:0.68rem; text-decoration:underline; cursor:pointer; padding:0; margin-top:10px; }
   .empty-state{ margin:40px 16px; text-align:center; color:var(--ink-soft); font-size:0.9rem; }
   .lightbox{ display:none; position:fixed; inset:0; background:rgba(32,41,58,0.92); z-index:50; align-items:center; justify-content:center; padding:20px; }
@@ -131,7 +153,7 @@
 
 <header>
   <h1>Trade Discipline Ledger</h1>
-  <div class="sub">Execution log &middot; Yes / No only</div>
+  <div class="sub">Execution + Psychology Log</div>
 </header>
 
 <div class="auth-wrap" id="authWrap">
@@ -162,30 +184,73 @@
   <div style="margin:0 16px;"><span class="signout" id="signOutBtn">Sign out</span></div>
 
   <div class="stats" id="statsBox">
-    <div class="stats-title">Overall — Yes vs No</div>
+    <div class="stats-title">Overall — Disciplined vs Undisciplined</div>
     <div id="statsContent"><div class="stats-empty">Log your first trade to see stats.</div></div>
+    <div class="stats-note">"No" on Chased Breakout / FOMO counts as disciplined — the score reflects good behavior, not raw Yes/No.</div>
   </div>
 
   <button class="new-btn" id="newTicketBtn">+ New Trade Ticket</button>
 
   <div class="ticket-form" id="ticketForm">
     <h2>New Ticket</h2>
-    <div class="field"><label>Symbol / Pair</label><input type="text" id="f-symbol" placeholder="e.g. EURUSD, AAPL"></div>
+
+    <div class="form-section-title">Trade</div>
+    <div class="field">
+      <label>Category</label>
+      <div class="chip-row" id="categoryChips"></div>
+    </div>
+    <div class="field" id="symbolSelectWrap" style="display:none;">
+      <label>Symbol / Pair</label>
+      <select id="symbolSelect"></select>
+    </div>
+    <div class="field" id="symbolCustomWrap" style="display:none;">
+      <label>Symbol / Pair (custom)</label>
+      <input type="text" id="symbolCustom" placeholder="Type symbol...">
+    </div>
     <div class="field"><label>Date</label><input type="date" id="f-date"></div>
     <div class="field"><label>Notes (optional)</label><textarea id="f-notes" placeholder="Any context on this trade..."></textarea></div>
+
     <div class="field">
-      <label>Screenshot (optional)</label>
-      <div class="upload-box" id="uploadBox">Tap to attach chart screenshot</div>
-      <input type="file" id="f-image" accept="image/*" style="display:none;">
-      <img id="imgPreview" class="upload-preview" style="display:none;">
+      <label>Screenshots (optional)</label>
+      <div class="upload-row">
+        <div class="upload-col">
+          <div class="upload-box" id="uploadBoxBefore">Before / Entry</div>
+          <input type="file" id="f-image-before" accept="image/*" style="display:none;">
+          <img id="imgPreviewBefore" class="upload-preview" style="display:none;">
+        </div>
+        <div class="upload-col">
+          <div class="upload-box" id="uploadBoxAfter">After / Exit</div>
+          <input type="file" id="f-image-after" accept="image/*" style="display:none;">
+          <img id="imgPreviewAfter" class="upload-preview" style="display:none;">
+        </div>
+      </div>
     </div>
-    <div class="field" style="margin-top:16px;">
-      <div class="yn-row" data-q="waitedSignal"><div class="yn-question">Did I wait for my signal?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
-      <div class="yn-row" data-q="plannedLocation"><div class="yn-question">Did I enter at my planned location?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
-      <div class="yn-row" data-q="chasedBreakout"><div class="yn-question">Did I chase the breakout?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
-      <div class="yn-row" data-q="fomo"><div class="yn-question">Did I enter because I feared missing the move?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
-      <div class="yn-row" data-q="followedExit"><div class="yn-question">Did I follow my exit rules?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+
+    <div class="form-section-title">Execution Checklist</div>
+    <div class="yn-row" data-q="waitedSignal"><div class="yn-question">Did I wait for my signal?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+    <div class="yn-row" data-q="plannedLocation"><div class="yn-question">Did I enter at my planned location?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+    <div class="yn-row" data-q="chasedBreakout"><div class="yn-question">Did I chase the breakout?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+    <div class="yn-row" data-q="fomo"><div class="yn-question">Did I enter because I feared missing the move?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+    <div class="yn-row" data-q="followedExit"><div class="yn-question">Did I follow my exit rules?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+
+    <div class="form-section-title">Psychology</div>
+    <div class="field">
+      <label>How did I feel before entry?</label>
+      <div class="chip-row" id="preEmotionChips"></div>
     </div>
+    <div class="field">
+      <label>Confidence at entry (1 low – 5 high)</label>
+      <div class="chip-row" id="confidenceChips"></div>
+    </div>
+    <div class="field">
+      <label>How did I feel after the trade?</label>
+      <div class="chip-row" id="postEmotionChips"></div>
+    </div>
+    <div class="field">
+      <label>Reflection (optional)</label>
+      <textarea id="f-reflection" placeholder="What would I do differently? What triggered this trade?"></textarea>
+    </div>
+
     <div class="form-actions">
       <button class="cancel-btn" id="cancelBtn">Cancel</button>
       <button class="save-btn" id="saveBtn">Save Ticket</button>
@@ -197,8 +262,8 @@
     <select id="sortSelect">
       <option value="date-desc">Newest first</option>
       <option value="date-asc">Oldest first</option>
-      <option value="score-desc">Highest yes %</option>
-      <option value="score-asc">Lowest yes %</option>
+      <option value="score-desc">Highest discipline %</option>
+      <option value="score-asc">Lowest discipline %</option>
       <option value="symbol">Symbol A–Z</option>
     </select>
   </div>
@@ -212,20 +277,53 @@
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const QUESTIONS = [
-  { key:'waitedSignal', label:'Waited for signal' },
-  { key:'plannedLocation', label:'Entered at planned location' },
-  { key:'chasedBreakout', label:'Chased the breakout' },
-  { key:'fomo', label:'Entered from FOMO' },
-  { key:'followedExit', label:'Followed exit rules' }
+  { key:'waitedSignal', label:'Waited for signal', goodWhen:true },
+  { key:'plannedLocation', label:'Entered at planned location', goodWhen:true },
+  { key:'chasedBreakout', label:'Chased the breakout', goodWhen:false },
+  { key:'fomo', label:'Entered from FOMO', goodWhen:false },
+  { key:'followedExit', label:'Followed exit rules', goodWhen:true }
 ];
+
+const CATEGORIES = {
+  'Forex': ['EUR/USD','GBP/USD','USD/JPY','USD/CHF','AUD/USD','USD/CAD','NZD/USD','EUR/GBP','EUR/JPY','GBP/JPY','EUR/CHF','AUD/JPY','CHF/JPY','EUR/AUD','GBP/AUD','CAD/JPY','NZD/JPY','GBP/CAD','EUR/CAD','AUD/CAD','AUD/NZD','AUD/CHF','GBP/CHF','GBP/NZD','EUR/NZD','USD/MXN','USD/ZAR','USD/TRY','USD/SEK','USD/NOK','USD/SGD','USD/CNH'],
+  'Metals & Energy': ['XAU/USD (Gold)','XAG/USD (Silver)','XPT/USD (Platinum)','XPD/USD (Palladium)','WTI Crude Oil','Brent Crude Oil','Natural Gas','Copper'],
+  'Indices': ['US30 (Dow Jones)','US100 (Nasdaq)','US500 (S&P 500)','UK100 (FTSE 100)','GER40 (DAX)','FRA40 (CAC 40)','EU50 (Euro Stoxx 50)','JPN225 (Nikkei 225)','AUS200 (ASX 200)','HK50 (Hang Seng)'],
+  'Crypto': ['BTC/USD','ETH/USD','XRP/USD','LTC/USD','BNB/USD','SOL/USD','ADA/USD','DOGE/USD','DOT/USD','AVAX/USD','MATIC/USD','LINK/USD'],
+  'Stocks': ['AAPL','MSFT','GOOGL','AMZN','TSLA','META','NVDA','NFLX','JPM','V','MA','DIS','BA','KO','PEP','WMT','XOM','CVX','JNJ','PG','INTC','AMD','UNH','HD','BRK.B']
+};
+const PRE_EMOTIONS = ['Calm','Confident','Anxious','FOMO','Impatient','Revenge','Bored','Excited','Neutral'];
+const POST_EMOTIONS = ['Satisfied','Relieved','Regretful','Frustrated','Anxious','Calm','Excited','Numb'];
+const CONFIDENCE_LEVELS = ['1','2','3','4','5'];
 
 let currentUser = null;
 let trades = [];
 let currentAnswers = {};
-let currentImageFile = null;
-let currentImagePreviewUrl = null;
+let currentCategory = null;
+let currentPreEmotion = null;
+let currentPostEmotion = null;
+let currentConfidence = null;
+let currentImageBeforeFile = null, currentImageBeforePreview = null;
+let currentImageAfterFile = null, currentImageAfterPreview = null;
 let isSignUpMode = false;
 
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function renderChipGroup(container, options, activeVal, onPick, colorClass){
+  container.innerHTML = options.map(opt => {
+    const isActive = opt === activeVal;
+    const cls = isActive ? `chip ${colorClass || 'active'}` : 'chip';
+    return `<button type="button" class="${cls}" data-val="${escapeHtml(opt)}">${escapeHtml(opt)}</button>`;
+  }).join('');
+  container.querySelectorAll('.chip').forEach(btn => {
+    btn.addEventListener('click', () => onPick(btn.dataset.val));
+  });
+}
+
+// ---- Auth ----
 const authWrap = document.getElementById('authWrap');
 const app = document.getElementById('app');
 const authEmail = document.getElementById('authEmail');
@@ -300,9 +398,6 @@ const ticketForm = document.getElementById('ticketForm');
 const newTicketBtn = document.getElementById('newTicketBtn');
 const cancelBtn = document.getElementById('cancelBtn');
 const saveBtn = document.getElementById('saveBtn');
-const uploadBox = document.getElementById('uploadBox');
-const fileInput = document.getElementById('f-image');
-const imgPreview = document.getElementById('imgPreview');
 const ticketsList = document.getElementById('ticketsList');
 const statsContent = document.getElementById('statsContent');
 const sortSelect = document.getElementById('sortSelect');
@@ -310,17 +405,66 @@ const tradeCount = document.getElementById('tradeCount');
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightboxImg');
 
-function resetForm(){
-  document.getElementById('f-symbol').value = '';
-  document.getElementById('f-notes').value = '';
-  document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
-  currentAnswers = {};
-  currentImageFile = null;
-  currentImagePreviewUrl = null;
-  imgPreview.style.display = 'none';
-  imgPreview.src = '';
-  document.querySelectorAll('.yn-btn').forEach(b => b.classList.remove('active-yes','active-no'));
+const categoryChipsEl = document.getElementById('categoryChips');
+const symbolSelectWrap = document.getElementById('symbolSelectWrap');
+const symbolSelect = document.getElementById('symbolSelect');
+const symbolCustomWrap = document.getElementById('symbolCustomWrap');
+const symbolCustom = document.getElementById('symbolCustom');
+const preEmotionChipsEl = document.getElementById('preEmotionChips');
+const postEmotionChipsEl = document.getElementById('postEmotionChips');
+const confidenceChipsEl = document.getElementById('confidenceChips');
+
+function renderCategoryChips(){
+  const opts = [...Object.keys(CATEGORIES), 'Custom'];
+  renderChipGroup(categoryChipsEl, opts, currentCategory, (val) => {
+    currentCategory = val;
+    renderCategoryChips();
+    if(val === 'Custom'){
+      symbolSelectWrap.style.display = 'none';
+      symbolCustomWrap.style.display = 'block';
+    } else {
+      symbolSelect.innerHTML = CATEGORIES[val].map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')
+        + `<option value="__other__">Other / not listed</option>`;
+      symbolSelectWrap.style.display = 'block';
+      symbolCustomWrap.style.display = 'none';
+    }
+  });
 }
+symbolSelect.addEventListener('change', () => {
+  symbolCustomWrap.style.display = (symbolSelect.value === '__other__') ? 'block' : 'none';
+});
+
+function getSelectedSymbol(){
+  if(currentCategory === 'Custom') return symbolCustom.value.trim();
+  if(symbolSelect.value === '__other__') return symbolCustom.value.trim();
+  return symbolSelect.value || '';
+}
+
+function resetForm(){
+  document.getElementById('f-notes').value = '';
+  document.getElementById('f-reflection').value = '';
+  document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+  symbolCustom.value = '';
+  currentAnswers = {};
+  currentCategory = null;
+  currentPreEmotion = null;
+  currentPostEmotion = null;
+  currentConfidence = null;
+  currentImageBeforeFile = null; currentImageBeforePreview = null;
+  currentImageAfterFile = null; currentImageAfterPreview = null;
+  document.getElementById('imgPreviewBefore').style.display = 'none';
+  document.getElementById('imgPreviewAfter').style.display = 'none';
+  symbolSelectWrap.style.display = 'none';
+  symbolCustomWrap.style.display = 'none';
+  document.querySelectorAll('.yn-btn').forEach(b => b.classList.remove('active-yes','active-no'));
+  renderCategoryChips();
+  renderChipGroup(preEmotionChipsEl, PRE_EMOTIONS, null, pickPre);
+  renderChipGroup(postEmotionChipsEl, POST_EMOTIONS, null, pickPost);
+  renderChipGroup(confidenceChipsEl, CONFIDENCE_LEVELS, null, pickConfidence);
+}
+function pickPre(val){ currentPreEmotion = val; renderChipGroup(preEmotionChipsEl, PRE_EMOTIONS, val, pickPre); }
+function pickPost(val){ currentPostEmotion = val; renderChipGroup(postEmotionChipsEl, POST_EMOTIONS, val, pickPost); }
+function pickConfidence(val){ currentConfidence = val; renderChipGroup(confidenceChipsEl, CONFIDENCE_LEVELS, val, pickConfidence); }
 
 newTicketBtn.addEventListener('click', () => {
   resetForm();
@@ -341,10 +485,7 @@ document.querySelectorAll('.yn-row').forEach(row => {
   });
 });
 
-uploadBox.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if(!file) return;
+function compressImage(file, onDone){
   const reader = new FileReader();
   reader.onload = (ev) => {
     const img = new Image();
@@ -356,46 +497,68 @@ fileInput.addEventListener('change', (e) => {
       canvas.height = img.height * scale;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      canvas.toBlob((blob) => {
-        currentImageFile = blob;
-        currentImagePreviewUrl = URL.createObjectURL(blob);
-        imgPreview.src = currentImagePreviewUrl;
-        imgPreview.style.display = 'block';
-      }, 'image/jpeg', 0.7);
+      canvas.toBlob((blob) => onDone(blob, URL.createObjectURL(blob)), 'image/jpeg', 0.7);
     };
     img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
-});
+}
+
+function wireUpload(boxId, inputId, previewId, setFile){
+  const box = document.getElementById(boxId);
+  const input = document.getElementById(inputId);
+  const preview = document.getElementById(previewId);
+  box.addEventListener('click', () => input.click());
+  input.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    compressImage(file, (blob, url) => {
+      setFile(blob, url);
+      preview.src = url;
+      preview.style.display = 'block';
+    });
+  });
+}
+wireUpload('uploadBoxBefore','f-image-before','imgPreviewBefore', (blob,url) => { currentImageBeforeFile = blob; currentImageBeforePreview = url; });
+wireUpload('uploadBoxAfter','f-image-after','imgPreviewAfter', (blob,url) => { currentImageAfterFile = blob; currentImageAfterPreview = url; });
 
 saveBtn.addEventListener('click', async () => {
-  const symbol = document.getElementById('f-symbol').value.trim() || 'Untitled';
+  const symbol = getSelectedSymbol();
   const trade_date = document.getElementById('f-date').value || new Date().toISOString().slice(0,10);
   const notes = document.getElementById('f-notes').value.trim();
+  const reflection = document.getElementById('f-reflection').value.trim();
 
-  if(Object.keys(currentAnswers).length < QUESTIONS.length){
-    alert('Please answer all 5 questions with Yes or No.');
-    return;
-  }
+  if(!currentCategory){ alert('Pick a category.'); return; }
+  if(!symbol){ alert('Pick or type a symbol.'); return; }
+  if(Object.keys(currentAnswers).length < QUESTIONS.length){ alert('Please answer all 5 checklist questions.'); return; }
 
   saveBtn.disabled = true;
   saveBtn.textContent = 'SAVING...';
   try{
-    let image_path = null;
-    if(currentImageFile){
-      const filename = `${currentUser.id}/${Date.now()}.jpg`;
-      const { error: uploadErr } = await supabaseClient.storage
-        .from('screenshots')
-        .upload(filename, currentImageFile, { contentType:'image/jpeg' });
-      if(uploadErr) throw uploadErr;
-      image_path = filename;
+    let image_path = null, image_path_after = null;
+    if(currentImageBeforeFile){
+      const fn = `${currentUser.id}/${Date.now()}-before.jpg`;
+      const { error } = await supabaseClient.storage.from('screenshots').upload(fn, currentImageBeforeFile, { contentType:'image/jpeg' });
+      if(error) throw error;
+      image_path = fn;
+    }
+    if(currentImageAfterFile){
+      const fn = `${currentUser.id}/${Date.now()}-after.jpg`;
+      const { error } = await supabaseClient.storage.from('screenshots').upload(fn, currentImageAfterFile, { contentType:'image/jpeg' });
+      if(error) throw error;
+      image_path_after = fn;
     }
 
     const { error: insertErr } = await supabaseClient.from('trades').insert({
       user_id: currentUser.id,
+      category: currentCategory,
       symbol, trade_date, notes,
       answers: currentAnswers,
-      image_path
+      image_path, image_path_after,
+      pre_emotion: currentPreEmotion,
+      confidence: currentConfidence ? parseInt(currentConfidence) : null,
+      post_emotion: currentPostEmotion,
+      reflection
     });
     if(insertErr) throw insertErr;
 
@@ -410,12 +573,11 @@ saveBtn.addEventListener('click', async () => {
   }
 });
 
-async function deleteTrade(id, imagePath){
+async function deleteTrade(id, imgBefore, imgAfter){
   if(!confirm('Delete this trade ticket? This cannot be undone.')) return;
   try{
-    if(imagePath){
-      await supabaseClient.storage.from('screenshots').remove([imagePath]);
-    }
+    const toRemove = [imgBefore, imgAfter].filter(Boolean);
+    if(toRemove.length) await supabaseClient.storage.from('screenshots').remove(toRemove);
     const { error } = await supabaseClient.from('trades').delete().eq('id', id);
     if(error) throw error;
     await loadTrades();
@@ -426,9 +588,12 @@ async function deleteTrade(id, imagePath){
 }
 
 function scoreOf(trade){
-  const yes = Object.values(trade.answers).filter(v => v === true).length;
-  const no = QUESTIONS.length - yes;
-  return { yes, no, pct: Math.round((yes / QUESTIONS.length) * 100) };
+  let good = 0;
+  QUESTIONS.forEach(q => {
+    const val = trade.answers[q.key];
+    if(val === q.goodWhen) good++;
+  });
+  return { good, bad: QUESTIONS.length - good, pct: Math.round((good / QUESTIONS.length) * 100) };
 }
 
 function renderStats(){
@@ -436,19 +601,24 @@ function renderStats(){
     statsContent.innerHTML = '<div class="stats-empty">Log your first trade to see stats.</div>';
     return;
   }
-  let totalYes = 0, totalNo = 0;
-  trades.forEach(t => Object.values(t.answers).forEach(v => v ? totalYes++ : totalNo++));
-  const total = totalYes + totalNo;
-  const yesPct = Math.round((totalYes/total)*100);
-  const noPct = 100 - yesPct;
+  let totalGood = 0, totalBad = 0;
+  trades.forEach(t => {
+    QUESTIONS.forEach(q => {
+      const val = t.answers[q.key];
+      if(val === q.goodWhen) totalGood++; else totalBad++;
+    });
+  });
+  const total = totalGood + totalBad;
+  const goodPct = Math.round((totalGood/total)*100);
+  const badPct = 100 - goodPct;
   statsContent.innerHTML = `
     <div class="bar">
-      ${yesPct > 0 ? `<div class="bar-yes" style="width:${yesPct}%">${yesPct}%</div>` : ''}
-      ${noPct > 0 ? `<div class="bar-no" style="width:${noPct}%">${noPct}%</div>` : ''}
+      ${goodPct > 0 ? `<div class="bar-yes" style="width:${goodPct}%">${goodPct}%</div>` : ''}
+      ${badPct > 0 ? `<div class="bar-no" style="width:${badPct}%">${badPct}%</div>` : ''}
     </div>
     <div class="stats-numbers">
-      <span class="yes-num">YES ${totalYes} (${yesPct}%)</span>
-      <span class="no-num">NO ${totalNo} (${noPct}%)</span>
+      <span class="yes-num">DISCIPLINED ${totalGood} (${goodPct}%)</span>
+      <span class="no-num">SLIPS ${totalBad} (${badPct}%)</span>
     </div>`;
 }
 
@@ -472,13 +642,16 @@ async function renderTickets(){
   else if(sortMode === 'date-asc') sorted.sort((a,b) => a.trade_date.localeCompare(b.trade_date));
   else if(sortMode === 'score-desc') sorted.sort((a,b) => b._score.pct - a._score.pct);
   else if(sortMode === 'score-asc') sorted.sort((a,b) => a._score.pct - b._score.pct);
-  else if(sortMode === 'symbol') sorted.sort((a,b) => a.symbol.localeCompare(b.symbol));
+  else if(sortMode === 'symbol') sorted.sort((a,b) => (a.symbol||'').localeCompare(b.symbol||''));
 
-  // Resolve signed URLs for images in parallel
   const withUrls = await Promise.all(sorted.map(async t => {
     if(t.image_path){
       const { data } = await supabaseClient.storage.from('screenshots').createSignedUrl(t.image_path, 3600);
-      t._imageUrl = data ? data.signedUrl : null;
+      t._imgBefore = data ? data.signedUrl : null;
+    }
+    if(t.image_path_after){
+      const { data } = await supabaseClient.storage.from('screenshots').createSignedUrl(t.image_path_after, 3600);
+      t._imgAfter = data ? data.signedUrl : null;
     }
     return t;
   }));
@@ -488,19 +661,37 @@ async function renderTickets(){
     const stamp = stampFor(s.pct);
     const answersHtml = QUESTIONS.map(q => {
       const val = t.answers[q.key];
-      return `<div class="ans"><span>${q.label}</span><span class="${val ? 'y':'n'}">${val ? 'YES':'NO'}</span></div>`;
+      const isGood = val === q.goodWhen;
+      return `<div class="ans"><span>${q.label}</span><span class="${isGood ? 'good':'bad'}">${val ? 'YES':'NO'}</span></div>`;
     }).join('');
+    const imgsHtml = (t._imgBefore || t._imgAfter) ? `
+      <div class="img-pair">
+        ${t._imgBefore ? `<div class="img-pair-col"><div class="img-pair-label">Before</div><img class="ticket-img" src="${t._imgBefore}" data-full="${t._imgBefore}"></div>` : ''}
+        ${t._imgAfter ? `<div class="img-pair-col"><div class="img-pair-label">After</div><img class="ticket-img" src="${t._imgAfter}" data-full="${t._imgAfter}"></div>` : ''}
+      </div>` : '';
+    const psychHtml = (t.pre_emotion || t.post_emotion || t.confidence || t.reflection) ? `
+      <div class="psych-block">
+        ${t.pre_emotion ? `<div class="psych-row"><span>Before</span><span>${escapeHtml(t.pre_emotion)}</span></div>` : ''}
+        ${t.confidence ? `<div class="psych-row"><span>Confidence</span><span>${t.confidence}/5</span></div>` : ''}
+        ${t.post_emotion ? `<div class="psych-row"><span>After</span><span>${escapeHtml(t.post_emotion)}</span></div>` : ''}
+        ${t.reflection ? `<div class="psych-reflection">${escapeHtml(t.reflection)}</div>` : ''}
+      </div>` : '';
     return `
       <div class="ticket">
         <div class="ticket-top">
-          <div><div class="ticket-symbol">${escapeHtml(t.symbol)}</div><div class="ticket-date">${t.trade_date}</div></div>
+          <div>
+            <div class="ticket-symbol">${escapeHtml(t.symbol)}</div>
+            <div class="ticket-category">${escapeHtml(t.category || '')}</div>
+            <div class="ticket-date">${t.trade_date}</div>
+          </div>
           <div class="stamp ${stamp.cls}">${stamp.text}</div>
         </div>
         ${t.notes ? `<div class="ticket-notes">${escapeHtml(t.notes)}</div>` : ''}
         <div class="ticket-answers">${answersHtml}</div>
-        <div class="ticket-score mono"><span>YES ${s.yes}/5 &middot; NO ${s.no}/5</span><span>${s.pct}%</span></div>
-        ${t._imageUrl ? `<img class="ticket-img" src="${t._imageUrl}" data-full="${t._imageUrl}">` : ''}
-        <button class="ticket-del" data-id="${t.id}" data-img="${t.image_path || ''}">Delete ticket</button>
+        <div class="ticket-score mono"><span>DISCIPLINED ${s.good}/5 &middot; SLIPS ${s.bad}/5</span><span>${s.pct}%</span></div>
+        ${psychHtml}
+        ${imgsHtml}
+        <button class="ticket-del" data-id="${t.id}" data-before="${t.image_path || ''}" data-after="${t.image_path_after || ''}">Delete ticket</button>
       </div>`;
   }).join('');
 
@@ -508,18 +699,12 @@ async function renderTickets(){
     img.addEventListener('click', () => { lightboxImg.src = img.dataset.full; lightbox.classList.add('open'); });
   });
   ticketsList.querySelectorAll('.ticket-del').forEach(btn => {
-    btn.addEventListener('click', () => deleteTrade(btn.dataset.id, btn.dataset.img || null));
+    btn.addEventListener('click', () => deleteTrade(btn.dataset.id, btn.dataset.before || null, btn.dataset.after || null));
   });
 }
 
 lightbox.addEventListener('click', () => lightbox.classList.remove('open'));
 sortSelect.addEventListener('change', renderTickets);
-
-function escapeHtml(str){
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
 
 async function loadTrades(){
   ticketsList.innerHTML = '<div class="loading">Loading ledger...</div>';
