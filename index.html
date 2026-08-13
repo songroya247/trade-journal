@@ -36,11 +36,15 @@
   .pw-wrap{ position:relative; }
   .pw-wrap input{ padding-right:52px !important; margin-bottom:0 !important; }
   .pw-toggle{
-    position:absolute; right:8px; top:50%; transform:translateY(-50%);
-    background:none; border:none; font-family:ui-monospace,monospace;
-    font-size:0.68rem; letter-spacing:0.05em; color:var(--ink-soft);
-    cursor:pointer; padding:6px 4px; text-transform:uppercase;
+    position:absolute; right:10px; top:50%; transform:translateY(-50%);
+    width:auto !important; height:auto !important;
+    background:none !important; border:none !important;
+    color:var(--ink-soft) !important; cursor:pointer; padding:4px !important;
+    margin:0 !important; display:flex; align-items:center; justify-content:center;
+    text-transform:none !important;
   }
+  .pw-toggle svg{ width:19px; height:19px; display:block; }
+  .pw-toggle:active{ color:var(--ink) !important; }
   .pw-wrap-outer{ margin-bottom:10px; }
   .auth-box button{ width:100%; padding:12px; background:var(--ink); color:var(--paper); border:none; font-family:ui-monospace,monospace; font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; margin-top:4px; }
   .auth-toggle{ text-align:center; margin-top:12px; font-size:0.78rem; color:var(--ink-soft); }
@@ -138,7 +142,12 @@
     <div class="pw-wrap-outer">
       <div class="pw-wrap">
         <input type="password" id="authPassword" placeholder="Password">
-        <button type="button" class="pw-toggle" id="pwToggle">SHOW</button>
+        <button type="button" class="pw-toggle" id="pwToggle" aria-label="Show password">
+          <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
       </div>
     </div>
     <button id="authSubmit">Sign in</button>
@@ -222,10 +231,14 @@ const app = document.getElementById('app');
 const authEmail = document.getElementById('authEmail');
 const authPassword = document.getElementById('authPassword');
 const pwToggle = document.getElementById('pwToggle');
+const eyeIcon = document.getElementById('eyeIcon');
+const EYE_OPEN = '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>';
+const EYE_CLOSED = '<path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a19.7 19.7 0 0 1 4.22-5.06M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a19.7 19.7 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
 pwToggle.addEventListener('click', () => {
   const isHidden = authPassword.type === 'password';
   authPassword.type = isHidden ? 'text' : 'password';
-  pwToggle.textContent = isHidden ? 'HIDE' : 'SHOW';
+  eyeIcon.innerHTML = isHidden ? EYE_CLOSED : EYE_OPEN;
+  pwToggle.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
 });
 const authSubmit = document.getElementById('authSubmit');
 const authMsg = document.getElementById('authMsg');
