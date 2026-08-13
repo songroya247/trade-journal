@@ -80,6 +80,17 @@
   .field textarea{ resize:vertical; min-height:50px; }
 
   .chip-row{ display:flex; flex-wrap:wrap; gap:6px; }
+  .chip.strategy-new{ border-style:dashed; }
+  .new-strategy-box{ display:none; border:1px dashed var(--ink); background:var(--paper); padding:12px; margin-top:8px; }
+  .new-strategy-box.open{ display:block; }
+  .new-strategy-box input, .new-strategy-box textarea{ width:100%; padding:8px; border:1px solid var(--ink); background:var(--paper-dark); font-family:inherit; font-size:0.85rem; margin-bottom:8px; }
+  .new-strategy-box textarea{ min-height:40px; resize:vertical; }
+  .new-strategy-actions{ display:flex; gap:8px; }
+  .new-strategy-actions button{ flex:1; padding:9px; font-family:ui-monospace,monospace; font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; border:1px solid var(--ink); }
+  .strategy-add-btn{ background:var(--ink); color:var(--paper); }
+  .strategy-cancel-btn{ background:var(--paper); color:var(--ink); }
+  .ticket-strategy{ font-family:ui-monospace,monospace; font-size:0.7rem; color:var(--ink); background:var(--paper-dark); display:inline-block; padding:2px 8px; margin-top:6px; border:1px solid var(--rule); }
+  .ticket-strategy-desc{ font-size:0.76rem; color:var(--ink-soft); font-style:italic; margin-top:3px; }
   .chip{ font-family:ui-monospace,monospace; font-size:0.72rem; padding:8px 12px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); cursor:pointer; }
   .chip.active{ background:var(--ink); color:var(--paper); }
   .chip.active-yes{ background:var(--yes); color:#fff; border-color:var(--yes); }
@@ -103,7 +114,26 @@
   .save-btn{ background:var(--ink); color:var(--paper); }
   .cancel-btn{ background:var(--paper); color:var(--ink); }
 
+  .search-bar{ margin:0 16px 12px; }
+  .search-bar input{ width:100%; padding:10px 12px; border:1px solid var(--ink); background:var(--paper-dark); color:var(--ink); font-family:ui-monospace,monospace; font-size:0.8rem; }
+  .review-btn{ font-family:ui-monospace,monospace; font-size:0.7rem; padding:6px 10px; border:1px solid var(--ink); background:var(--ink); color:var(--paper); cursor:pointer; letter-spacing:0.04em; }
   .sort-bar{ display:flex; align-items:center; justify-content:space-between; margin:0 16px 12px; font-family:ui-monospace,monospace; font-size:0.72rem; color:var(--ink-soft); }
+
+  .review-overlay{
+    display:none; position:fixed; inset:0; z-index:60;
+    background:var(--paper);
+    background-image:linear-gradient(var(--paper) 0px, var(--paper) 27px, var(--rule) 28px);
+    background-size:100% 28px;
+    flex-direction:column;
+  }
+  .review-overlay.open{ display:flex; }
+  .review-header{ display:flex; justify-content:space-between; align-items:center; padding:16px 18px; border-bottom:2px solid var(--ink); flex-shrink:0; }
+  .review-close{ background:none; border:1px solid var(--ink); color:var(--ink); font-family:ui-monospace,monospace; font-size:0.7rem; padding:6px 10px; cursor:pointer; }
+  .review-card-wrap{ flex:1; overflow-y:auto; padding:16px; touch-action:pan-y; }
+  .review-nav{ display:flex; gap:10px; padding:14px 16px; border-top:2px solid var(--ink); flex-shrink:0; background:var(--paper); }
+  .review-nav-btn{ flex:1; padding:14px; background:var(--ink); color:var(--paper); border:none; font-family:ui-monospace,monospace; font-size:0.8rem; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; }
+  .review-nav-btn:disabled{ opacity:0.35; cursor:default; }
+  .review-empty{ text-align:center; color:var(--ink-soft); margin-top:60px; font-size:0.9rem; }
   .sort-bar select{ font-family:ui-monospace,monospace; font-size:0.72rem; padding:6px 8px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); }
 
   .tickets{ margin:0 16px; display:flex; flex-direction:column; gap:14px; }
@@ -208,6 +238,18 @@
       <label>Symbol / Pair (custom)</label>
       <input type="text" id="symbolCustom" placeholder="Type symbol...">
     </div>
+    <div class="field">
+      <label>Strategy (optional)</label>
+      <div class="chip-row" id="strategyChips"></div>
+      <div class="new-strategy-box" id="newStrategyBox">
+        <input type="text" id="newStrategyName" placeholder="Strategy name (e.g. London Breakout)">
+        <textarea id="newStrategyDesc" placeholder="Short description of the setup / rules (optional)"></textarea>
+        <div class="new-strategy-actions">
+          <button type="button" class="strategy-cancel-btn" id="newStrategyCancel">Cancel</button>
+          <button type="button" class="strategy-add-btn" id="newStrategyAdd">Add Strategy</button>
+        </div>
+      </div>
+    </div>
     <div class="field"><label>Date</label><input type="date" id="f-date"></div>
     <div class="field"><label>Notes (optional)</label><textarea id="f-notes" placeholder="Any context on this trade..."></textarea></div>
 
@@ -262,21 +304,41 @@
     </div>
   </div>
 
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search symbol, strategy, notes, emotion...">
+  </div>
+
   <div class="sort-bar">
     <span id="tradeCount">0 trades</span>
-    <select id="sortSelect">
-      <option value="date-desc">Newest first</option>
-      <option value="date-asc">Oldest first</option>
-      <option value="score-desc">Highest discipline %</option>
-      <option value="score-asc">Lowest discipline %</option>
-      <option value="symbol">Symbol A–Z</option>
-    </select>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button id="reviewModeBtn" class="review-btn">🔁 Review</button>
+      <select id="sortSelect">
+        <option value="date-desc">Newest first</option>
+        <option value="date-asc">Oldest first</option>
+        <option value="score-desc">Highest discipline %</option>
+        <option value="score-asc">Lowest discipline %</option>
+        <option value="symbol">Symbol A–Z</option>
+        <option value="strategy">By strategy</option>
+      </select>
+    </div>
   </div>
 
   <div class="tickets" id="ticketsList"><div class="loading">Loading ledger...</div></div>
 </div>
 
 <div class="lightbox" id="lightbox"><img id="lightboxImg" src=""></div>
+
+<div class="review-overlay" id="reviewOverlay">
+  <div class="review-header">
+    <span id="reviewCounter" class="mono"></span>
+    <button id="reviewClose" class="review-close">✕ Close</button>
+  </div>
+  <div class="review-card-wrap" id="reviewCardWrap"></div>
+  <div class="review-nav">
+    <button id="reviewPrev" class="review-nav-btn">‹ Prev</button>
+    <button id="reviewNext" class="review-nav-btn">Next ›</button>
+  </div>
+</div>
 
 <script>
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -317,6 +379,8 @@ let currentImageBeforeFile = null, currentImageBeforePreview = null;
 let currentImageAfterFile = null, currentImageAfterPreview = null;
 let existingImageBeforePath = null, existingImageAfterPath = null;
 let editingTradeId = null;
+let strategies = [];
+let currentStrategyId = null;
 let isSignUpMode = false;
 
 function escapeHtml(str){
@@ -399,6 +463,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
   if(currentUser){
     authWrap.style.display = 'none';
     app.style.display = 'block';
+    loadStrategies();
     loadTrades();
   } else {
     authWrap.style.display = 'block';
@@ -453,6 +518,79 @@ function getSelectedSymbol(){
   return symbolSelect.value || '';
 }
 
+// ---- Strategies ----
+const strategyChipsEl = document.getElementById('strategyChips');
+const newStrategyBox = document.getElementById('newStrategyBox');
+const newStrategyName = document.getElementById('newStrategyName');
+const newStrategyDesc = document.getElementById('newStrategyDesc');
+const newStrategyAdd = document.getElementById('newStrategyAdd');
+const newStrategyCancel = document.getElementById('newStrategyCancel');
+
+async function loadStrategies(){
+  try{
+    const { data, error } = await supabaseClient.from('strategies').select('*').order('created_at', { ascending:true });
+    if(error) throw error;
+    strategies = data || [];
+  } catch(err){
+    console.error('Failed to load strategies', err);
+    strategies = [];
+  }
+}
+
+function renderStrategyChips(){
+  const opts = strategies.map(s => s.id);
+  strategyChipsEl.innerHTML = opts.map(id => {
+    const s = strategies.find(x => x.id === id);
+    const isActive = id === currentStrategyId;
+    return `<button type="button" class="${isActive ? 'chip active':'chip'}" data-id="${id}">${escapeHtml(s.name)}</button>`;
+  }).join('') + `<button type="button" class="chip strategy-new" id="strategyNewChip">+ New</button>`;
+
+  strategyChipsEl.querySelectorAll('.chip[data-id]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentStrategyId = (currentStrategyId === btn.dataset.id) ? null : btn.dataset.id;
+      newStrategyBox.classList.remove('open');
+      renderStrategyChips();
+    });
+  });
+  document.getElementById('strategyNewChip').addEventListener('click', () => {
+    newStrategyBox.classList.toggle('open');
+    if(newStrategyBox.classList.contains('open')) newStrategyName.focus();
+  });
+}
+
+newStrategyCancel.addEventListener('click', () => {
+  newStrategyBox.classList.remove('open');
+  newStrategyName.value = '';
+  newStrategyDesc.value = '';
+});
+
+newStrategyAdd.addEventListener('click', async () => {
+  const name = newStrategyName.value.trim();
+  const description = newStrategyDesc.value.trim();
+  if(!name){ alert('Give the strategy a name.'); return; }
+  newStrategyAdd.disabled = true;
+  newStrategyAdd.textContent = 'Adding...';
+  try{
+    const { data, error } = await supabaseClient.from('strategies')
+      .insert({ user_id: currentUser.id, name, description })
+      .select().single();
+    if(error) throw error;
+    strategies.push(data);
+    currentStrategyId = data.id;
+    newStrategyBox.classList.remove('open');
+    newStrategyName.value = '';
+    newStrategyDesc.value = '';
+    renderStrategyChips();
+  } catch(err){
+    console.error(err);
+    alert('Could not add strategy: ' + (err.message || 'unknown error'));
+  } finally {
+    newStrategyAdd.disabled = false;
+    newStrategyAdd.textContent = 'Add Strategy';
+  }
+});
+
+
 function resetForm(){
   editingTradeId = null;
   document.getElementById('ticketFormTitle').textContent = 'New Ticket';
@@ -463,6 +601,7 @@ function resetForm(){
   symbolCustom.value = '';
   currentAnswers = {};
   currentCategory = null;
+  currentStrategyId = null;
   currentPreEmotions = [];
   currentPostEmotions = [];
   currentConfidence = null;
@@ -473,8 +612,12 @@ function resetForm(){
   document.getElementById('imgPreviewAfter').style.display = 'none';
   symbolSelectWrap.style.display = 'none';
   symbolCustomWrap.style.display = 'none';
+  newStrategyBox.classList.remove('open');
+  newStrategyName.value = '';
+  newStrategyDesc.value = '';
   document.querySelectorAll('.yn-btn').forEach(b => b.classList.remove('active-yes','active-no'));
   renderCategoryChips();
+  renderStrategyChips();
   renderPreEmotionChips();
   renderPostEmotionChips();
   renderConfidenceChips();
@@ -521,6 +664,8 @@ function openEditForm(trade){
 
   currentCategory = trade.category || 'Custom';
   renderCategoryChips();
+  currentStrategyId = trade.strategy_id || null;
+  renderStrategyChips();
   if(currentCategory !== 'Custom' && CATEGORIES[currentCategory]){
     symbolSelect.innerHTML = CATEGORIES[currentCategory].map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')
       + `<option value="__other__">Other / not listed</option>`;
@@ -667,6 +812,7 @@ saveBtn.addEventListener('click', async () => {
 
     const payload = {
       category: currentCategory,
+      strategy_id: currentStrategyId,
       symbol, trade_date, notes,
       answers: currentAnswers,
       image_path, image_path_after,
@@ -758,23 +904,105 @@ function stampFor(pct){
   return { cls:'mixed', text:'MIXED' };
 }
 
-async function renderTickets(){
-  tradeCount.textContent = trades.length + (trades.length === 1 ? ' trade' : ' trades');
-  if(trades.length === 0){
-    ticketsList.innerHTML = '<div class="empty-state">No trades logged yet. Tap "New Trade Ticket" to start your ledger.</div>';
-    return;
+function buildTicketCardHtml(t){
+  const s = t._score;
+  const isOpen = t.answers['followedExit'] === undefined;
+  const stamp = isOpen ? { cls:'mixed', text:'OPEN' } : stampFor(s.pct);
+  const answersHtml = QUESTIONS.map(q => {
+    const val = t.answers[q.key];
+    if(val === undefined){
+      return `<div class="ans"><span>${q.label}</span><span style="color:var(--amber); font-weight:bold;">PENDING</span></div>`;
+    }
+    const isGood = val === q.goodWhen;
+    return `<div class="ans"><span>${q.label}</span><span class="${isGood ? 'good':'bad'}">${val ? 'YES':'NO'}</span></div>`;
+  }).join('');
+  const imgsHtml = (t._imgBefore || t._imgAfter) ? `
+    <div class="img-pair">
+      ${t._imgBefore ? `<div class="img-pair-col"><div class="img-pair-label">Before</div><img class="ticket-img" src="${t._imgBefore}" data-full="${t._imgBefore}"></div>` : ''}
+      ${t._imgAfter ? `<div class="img-pair-col"><div class="img-pair-label">After</div><img class="ticket-img" src="${t._imgAfter}" data-full="${t._imgAfter}"></div>` : ''}
+    </div>` : '';
+  const psychHtml = (t.pre_emotion || t.post_emotion || t.confidence || t.reflection) ? `
+    <div class="psych-block">
+      ${t.pre_emotion ? `<div class="psych-row"><span>Before</span><span>${escapeHtml(t.pre_emotion)}</span></div>` : ''}
+      ${t.confidence ? `<div class="psych-row"><span>Confidence</span><span>${t.confidence}/5</span></div>` : ''}
+      ${t.post_emotion ? `<div class="psych-row"><span>After</span><span>${escapeHtml(t.post_emotion)}</span></div>` : ''}
+      ${t.reflection ? `<div class="psych-reflection">${escapeHtml(t.reflection)}</div>` : ''}
+    </div>` : '';
+  const strategy = t.strategy_id ? strategies.find(s2 => s2.id === t.strategy_id) : null;
+  const strategyHtml = strategy ? `
+    <div class="ticket-strategy">📐 ${escapeHtml(strategy.name)}</div>
+    ${strategy.description ? `<div class="ticket-strategy-desc">${escapeHtml(strategy.description)}</div>` : ''}
+  ` : '';
+  return `
+    <div class="ticket">
+      <div class="ticket-top">
+        <div>
+          <div class="ticket-symbol">${escapeHtml(t.symbol)}</div>
+          <div class="ticket-category">${escapeHtml(t.category || '')}</div>
+          <div class="ticket-date">${t.trade_date}</div>
+        </div>
+        <div class="stamp ${stamp.cls}">${stamp.text}</div>
+      </div>
+      ${strategyHtml}
+      ${t.notes ? `<div class="ticket-notes">${escapeHtml(t.notes)}</div>` : ''}
+      <div class="ticket-answers">${answersHtml}</div>
+      <div class="ticket-score mono"><span>DISCIPLINED ${s.good}/${s.answered} &middot; SLIPS ${s.bad}/${s.answered}</span><span>${s.pct}%</span></div>
+      ${psychHtml}
+      ${imgsHtml}
+      <div style="display:flex; gap:16px; margin-top:10px;">
+        <button class="ticket-edit" data-id="${t.id}">Edit ticket</button>
+        <button class="ticket-del" data-id="${t.id}" data-before="${t.image_path || ''}" data-after="${t.image_path_after || ''}">Delete ticket</button>
+      </div>
+    </div>`;
+}
+
+function wireTicketCardHandlers(containerEl, fromReview){
+  containerEl.querySelectorAll('.ticket-img').forEach(img => {
+    img.addEventListener('click', () => { lightboxImg.src = img.dataset.full; lightbox.classList.add('open'); });
+  });
+  containerEl.querySelectorAll('.ticket-del').forEach(btn => {
+    btn.addEventListener('click', () => deleteTrade(btn.dataset.id, btn.dataset.before || null, btn.dataset.after || null));
+  });
+  containerEl.querySelectorAll('.ticket-edit').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const trade = trades.find(t => t.id === btn.dataset.id);
+      if(trade){
+        if(fromReview) reviewOverlay.classList.remove('open');
+        openEditForm(trade);
+      }
+    });
+  });
+}
+
+async function getVisibleTrades(){
+  let list = [...trades];
+  list.forEach(t => t._score = scoreOf(t));
+
+  const query = searchInput.value.trim().toLowerCase();
+  if(query){
+    list = list.filter(t => {
+      const strategy = t.strategy_id ? strategies.find(s => s.id === t.strategy_id) : null;
+      const haystack = [
+        t.symbol, t.category, t.notes, t.reflection, t.pre_emotion, t.post_emotion,
+        strategy ? strategy.name : '', strategy ? strategy.description : ''
+      ].filter(Boolean).join(' ').toLowerCase();
+      return haystack.includes(query);
+    });
   }
 
   const sortMode = sortSelect.value;
-  let sorted = [...trades];
-  sorted.forEach(t => t._score = scoreOf(t));
-  if(sortMode === 'date-desc') sorted.sort((a,b) => b.trade_date.localeCompare(a.trade_date));
-  else if(sortMode === 'date-asc') sorted.sort((a,b) => a.trade_date.localeCompare(b.trade_date));
-  else if(sortMode === 'score-desc') sorted.sort((a,b) => b._score.pct - a._score.pct);
-  else if(sortMode === 'score-asc') sorted.sort((a,b) => a._score.pct - b._score.pct);
-  else if(sortMode === 'symbol') sorted.sort((a,b) => (a.symbol||'').localeCompare(b.symbol||''));
+  if(sortMode === 'date-desc') list.sort((a,b) => b.trade_date.localeCompare(a.trade_date));
+  else if(sortMode === 'date-asc') list.sort((a,b) => a.trade_date.localeCompare(b.trade_date));
+  else if(sortMode === 'score-desc') list.sort((a,b) => b._score.pct - a._score.pct);
+  else if(sortMode === 'score-asc') list.sort((a,b) => a._score.pct - b._score.pct);
+  else if(sortMode === 'symbol') list.sort((a,b) => (a.symbol||'').localeCompare(b.symbol||''));
+  else if(sortMode === 'strategy') list.sort((a,b) => {
+    const nameA = strategies.find(s => s.id === a.strategy_id)?.name || '';
+    const nameB = strategies.find(s => s.id === b.strategy_id)?.name || '';
+    return nameA.localeCompare(nameB);
+  });
 
-  const withUrls = await Promise.all(sorted.map(async t => {
+  await Promise.all(list.map(async t => {
     if(t.image_path){
       const { data } = await supabaseClient.storage.from('screenshots').createSignedUrl(t.image_path, 3600);
       t._imgBefore = data ? data.signedUrl : null;
@@ -786,68 +1014,92 @@ async function renderTickets(){
     return t;
   }));
 
-  ticketsList.innerHTML = withUrls.map(t => {
-    const s = t._score;
-    const isOpen = t.answers['followedExit'] === undefined;
-    const stamp = isOpen ? { cls:'mixed', text:'OPEN' } : stampFor(s.pct);
-    const answersHtml = QUESTIONS.map(q => {
-      const val = t.answers[q.key];
-      if(val === undefined){
-        return `<div class="ans"><span>${q.label}</span><span style="color:var(--amber); font-weight:bold;">PENDING</span></div>`;
-      }
-      const isGood = val === q.goodWhen;
-      return `<div class="ans"><span>${q.label}</span><span class="${isGood ? 'good':'bad'}">${val ? 'YES':'NO'}</span></div>`;
-    }).join('');
-    const imgsHtml = (t._imgBefore || t._imgAfter) ? `
-      <div class="img-pair">
-        ${t._imgBefore ? `<div class="img-pair-col"><div class="img-pair-label">Before</div><img class="ticket-img" src="${t._imgBefore}" data-full="${t._imgBefore}"></div>` : ''}
-        ${t._imgAfter ? `<div class="img-pair-col"><div class="img-pair-label">After</div><img class="ticket-img" src="${t._imgAfter}" data-full="${t._imgAfter}"></div>` : ''}
-      </div>` : '';
-    const psychHtml = (t.pre_emotion || t.post_emotion || t.confidence || t.reflection) ? `
-      <div class="psych-block">
-        ${t.pre_emotion ? `<div class="psych-row"><span>Before</span><span>${escapeHtml(t.pre_emotion)}</span></div>` : ''}
-        ${t.confidence ? `<div class="psych-row"><span>Confidence</span><span>${t.confidence}/5</span></div>` : ''}
-        ${t.post_emotion ? `<div class="psych-row"><span>After</span><span>${escapeHtml(t.post_emotion)}</span></div>` : ''}
-        ${t.reflection ? `<div class="psych-reflection">${escapeHtml(t.reflection)}</div>` : ''}
-      </div>` : '';
-    return `
-      <div class="ticket">
-        <div class="ticket-top">
-          <div>
-            <div class="ticket-symbol">${escapeHtml(t.symbol)}</div>
-            <div class="ticket-category">${escapeHtml(t.category || '')}</div>
-            <div class="ticket-date">${t.trade_date}</div>
-          </div>
-          <div class="stamp ${stamp.cls}">${stamp.text}</div>
-        </div>
-        ${t.notes ? `<div class="ticket-notes">${escapeHtml(t.notes)}</div>` : ''}
-        <div class="ticket-answers">${answersHtml}</div>
-        <div class="ticket-score mono"><span>DISCIPLINED ${s.good}/${s.answered} &middot; SLIPS ${s.bad}/${s.answered}</span><span>${s.pct}%</span></div>
-        ${psychHtml}
-        ${imgsHtml}
-        <div style="display:flex; gap:16px; margin-top:10px;">
-          <button class="ticket-edit" data-id="${t.id}">Edit ticket</button>
-          <button class="ticket-del" data-id="${t.id}" data-before="${t.image_path || ''}" data-after="${t.image_path_after || ''}">Delete ticket</button>
-        </div>
-      </div>`;
-  }).join('');
+  return list;
+}
 
-  ticketsList.querySelectorAll('.ticket-img').forEach(img => {
-    img.addEventListener('click', () => { lightboxImg.src = img.dataset.full; lightbox.classList.add('open'); });
-  });
-  ticketsList.querySelectorAll('.ticket-del').forEach(btn => {
-    btn.addEventListener('click', () => deleteTrade(btn.dataset.id, btn.dataset.before || null, btn.dataset.after || null));
-  });
-  ticketsList.querySelectorAll('.ticket-edit').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const trade = trades.find(t => t.id === btn.dataset.id);
-      if(trade) openEditForm(trade);
-    });
-  });
+let currentVisibleList = [];
+
+async function renderTickets(){
+  if(trades.length === 0){
+    tradeCount.textContent = '0 trades';
+    ticketsList.innerHTML = '<div class="empty-state">No trades logged yet. Tap "New Trade Ticket" to start your ledger.</div>';
+    currentVisibleList = [];
+    return;
+  }
+
+  const list = await getVisibleTrades();
+  currentVisibleList = list;
+  const query = searchInput.value.trim();
+  tradeCount.textContent = query ? `${list.length} of ${trades.length} trades` : `${trades.length} ${trades.length === 1 ? 'trade' : 'trades'}`;
+
+  if(list.length === 0){
+    ticketsList.innerHTML = '<div class="empty-state">No trades match your search.</div>';
+    return;
+  }
+
+  ticketsList.innerHTML = list.map(buildTicketCardHtml).join('');
+  wireTicketCardHandlers(ticketsList, false);
 }
 
 lightbox.addEventListener('click', () => lightbox.classList.remove('open'));
 sortSelect.addEventListener('change', renderTickets);
+
+let searchDebounce = null;
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(renderTickets, 250);
+});
+
+// ---- Review Mode ----
+const reviewOverlay = document.getElementById('reviewOverlay');
+const reviewCardWrap = document.getElementById('reviewCardWrap');
+const reviewCounter = document.getElementById('reviewCounter');
+const reviewPrev = document.getElementById('reviewPrev');
+const reviewNext = document.getElementById('reviewNext');
+const reviewClose = document.getElementById('reviewClose');
+let reviewIndex = 0;
+
+function renderReviewCard(){
+  if(currentVisibleList.length === 0){
+    reviewCardWrap.innerHTML = '<div class="review-empty">No trades to review.</div>';
+    reviewCounter.textContent = '';
+    reviewPrev.disabled = true;
+    reviewNext.disabled = true;
+    return;
+  }
+  const t = currentVisibleList[reviewIndex];
+  reviewCounter.textContent = `${reviewIndex + 1} / ${currentVisibleList.length}`;
+  reviewCardWrap.innerHTML = buildTicketCardHtml(t);
+  reviewCardWrap.scrollTop = 0;
+  wireTicketCardHandlers(reviewCardWrap, true);
+  reviewPrev.disabled = reviewIndex === 0;
+  reviewNext.disabled = reviewIndex === currentVisibleList.length - 1;
+}
+
+document.getElementById('reviewModeBtn').addEventListener('click', () => {
+  if(currentVisibleList.length === 0){ alert('No trades to review yet.'); return; }
+  reviewIndex = 0;
+  reviewOverlay.classList.add('open');
+  renderReviewCard();
+});
+reviewClose.addEventListener('click', () => reviewOverlay.classList.remove('open'));
+reviewPrev.addEventListener('click', () => { if(reviewIndex > 0){ reviewIndex--; renderReviewCard(); } });
+reviewNext.addEventListener('click', () => { if(reviewIndex < currentVisibleList.length - 1){ reviewIndex++; renderReviewCard(); } });
+
+// Swipe support
+let touchStartX = null;
+reviewCardWrap.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+reviewCardWrap.addEventListener('touchend', (e) => {
+  if(touchStartX === null) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if(Math.abs(dx) > 60){
+    if(dx < 0 && reviewIndex < currentVisibleList.length - 1){ reviewIndex++; renderReviewCard(); }
+    else if(dx > 0 && reviewIndex > 0){ reviewIndex--; renderReviewCard(); }
+  }
+  touchStartX = null;
+});
+
 
 async function loadTrades(){
   ticketsList.innerHTML = '<div class="loading">Loading ledger...</div>';
