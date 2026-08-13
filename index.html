@@ -33,6 +33,15 @@
   .auth-box h2{ margin:0 0 6px; font-size:1.15rem; }
   .auth-box p{ font-size:0.82rem; color:var(--ink-soft); margin:0 0 16px; }
   .auth-box input{ width:100%; padding:10px; margin-bottom:10px; border:1px solid var(--ink); background:var(--paper); font-family:inherit; font-size:0.9rem; }
+  .pw-wrap{ position:relative; }
+  .pw-wrap input{ padding-right:52px !important; margin-bottom:0 !important; }
+  .pw-toggle{
+    position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    background:none; border:none; font-family:ui-monospace,monospace;
+    font-size:0.68rem; letter-spacing:0.05em; color:var(--ink-soft);
+    cursor:pointer; padding:6px 4px; text-transform:uppercase;
+  }
+  .pw-wrap-outer{ margin-bottom:10px; }
   .auth-box button{ width:100%; padding:12px; background:var(--ink); color:var(--paper); border:none; font-family:ui-monospace,monospace; font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; margin-top:4px; }
   .auth-toggle{ text-align:center; margin-top:12px; font-size:0.78rem; color:var(--ink-soft); }
   .auth-toggle a{ color:var(--ink); cursor:pointer; text-decoration:underline; }
@@ -126,7 +135,12 @@
     <h2 id="authTitle">Sign in</h2>
     <p id="authSub">Your private ledger. Only you can see it.</p>
     <input type="text" id="authEmail" placeholder="Email">
-    <input type="password" id="authPassword" placeholder="Password">
+    <div class="pw-wrap-outer">
+      <div class="pw-wrap">
+        <input type="password" id="authPassword" placeholder="Password">
+        <button type="button" class="pw-toggle" id="pwToggle">SHOW</button>
+      </div>
+    </div>
     <button id="authSubmit">Sign in</button>
     <div class="auth-toggle">
       <span id="authToggleText">No account yet?</span> <a id="authToggleLink">Sign up</a>
@@ -207,6 +221,12 @@ const authWrap = document.getElementById('authWrap');
 const app = document.getElementById('app');
 const authEmail = document.getElementById('authEmail');
 const authPassword = document.getElementById('authPassword');
+const pwToggle = document.getElementById('pwToggle');
+pwToggle.addEventListener('click', () => {
+  const isHidden = authPassword.type === 'password';
+  authPassword.type = isHidden ? 'text' : 'password';
+  pwToggle.textContent = isHidden ? 'HIDE' : 'SHOW';
+});
 const authSubmit = document.getElementById('authSubmit');
 const authMsg = document.getElementById('authMsg');
 const authTitle = document.getElementById('authTitle');
