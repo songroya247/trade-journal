@@ -134,7 +134,8 @@
   .img-pair-label{ font-family:ui-monospace,monospace; font-size:0.62rem; color:var(--ink-soft); text-transform:uppercase; margin-bottom:4px; }
   .ticket-img{ width:100%; height:120px; object-fit:cover; border:1px solid var(--ink); cursor:pointer; display:block; }
 
-  .ticket-del{ background:none; border:none; color:var(--ink-soft); font-family:ui-monospace,monospace; font-size:0.68rem; text-decoration:underline; cursor:pointer; padding:0; margin-top:10px; }
+  .ticket-del{ background:none; border:none; color:var(--ink-soft); font-family:ui-monospace,monospace; font-size:0.68rem; text-decoration:underline; cursor:pointer; padding:0; }
+  .ticket-edit{ background:none; border:none; color:var(--ink); font-family:ui-monospace,monospace; font-size:0.68rem; text-decoration:underline; cursor:pointer; padding:0; }
   .empty-state{ margin:40px 16px; text-align:center; color:var(--ink-soft); font-size:0.9rem; }
   .lightbox{ display:none; position:fixed; inset:0; background:rgba(32,41,58,0.92); z-index:50; align-items:center; justify-content:center; padding:20px; }
   .lightbox.open{ display:flex; }
@@ -192,7 +193,7 @@
   <button class="new-btn" id="newTicketBtn">+ New Trade Ticket</button>
 
   <div class="ticket-form" id="ticketForm">
-    <h2>New Ticket</h2>
+    <h2 id="ticketFormTitle">New Ticket</h2>
 
     <div class="form-section-title">Trade</div>
     <div class="field">
@@ -291,19 +292,24 @@ const CATEGORIES = {
   'Crypto': ['BTC/USD','ETH/USD','XRP/USD','LTC/USD','BNB/USD','SOL/USD','ADA/USD','DOGE/USD','DOT/USD','AVAX/USD','MATIC/USD','LINK/USD'],
   'Stocks': ['AAPL','MSFT','GOOGL','AMZN','TSLA','META','NVDA','NFLX','JPM','V','MA','DIS','BA','KO','PEP','WMT','XOM','CVX','JNJ','PG','INTC','AMD','UNH','HD','BRK.B']
 };
-const PRE_EMOTIONS = ['Calm','Confident','Anxious','FOMO','Impatient','Revenge','Bored','Excited','Neutral'];
-const POST_EMOTIONS = ['Satisfied','Relieved','Regretful','Frustrated','Anxious','Calm','Excited','Numb'];
-const CONFIDENCE_LEVELS = ['1','2','3','4','5'];
+const PRE_EMOTIONS = ['😌 Calm','😎 Confident','😰 Anxious','🏃 FOMO','⏱️ Impatient','😠 Revenge','😴 Bored','🤩 Excited','😐 Neutral'];
+const POST_EMOTIONS = ['😊 Satisfied','😮\u200d💨 Relieved','😔 Regretful','😤 Frustrated','😰 Anxious','😌 Calm','🤩 Excited','😶 Numb'];
+const CONFIDENCE_LEVELS = [
+  { value:'1', label:'1 😬' }, { value:'2', label:'2 🙁' }, { value:'3', label:'3 😐' },
+  { value:'4', label:'4 🙂' }, { value:'5', label:'5 💪' }
+];
 
 let currentUser = null;
 let trades = [];
 let currentAnswers = {};
 let currentCategory = null;
-let currentPreEmotion = null;
-let currentPostEmotion = null;
+let currentPreEmotions = [];
+let currentPostEmotions = [];
 let currentConfidence = null;
 let currentImageBeforeFile = null, currentImageBeforePreview = null;
 let currentImageAfterFile = null, currentImageAfterPreview = null;
+let existingImageBeforePath = null, existingImageAfterPath = null;
+let editingTradeId = null;
 let isSignUpMode = false;
 
 function escapeHtml(str){
@@ -441,30 +447,127 @@ function getSelectedSymbol(){
 }
 
 function resetForm(){
+  editingTradeId = null;
+  document.getElementById('ticketFormTitle').textContent = 'New Ticket';
+  saveBtn.textContent = 'Save Ticket';
   document.getElementById('f-notes').value = '';
   document.getElementById('f-reflection').value = '';
   document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
   symbolCustom.value = '';
   currentAnswers = {};
   currentCategory = null;
-  currentPreEmotion = null;
-  currentPostEmotion = null;
+  currentPreEmotions = [];
+  currentPostEmotions = [];
   currentConfidence = null;
   currentImageBeforeFile = null; currentImageBeforePreview = null;
   currentImageAfterFile = null; currentImageAfterPreview = null;
+  existingImageBeforePath = null; existingImageAfterPath = null;
   document.getElementById('imgPreviewBefore').style.display = 'none';
   document.getElementById('imgPreviewAfter').style.display = 'none';
   symbolSelectWrap.style.display = 'none';
   symbolCustomWrap.style.display = 'none';
   document.querySelectorAll('.yn-btn').forEach(b => b.classList.remove('active-yes','active-no'));
   renderCategoryChips();
-  renderChipGroup(preEmotionChipsEl, PRE_EMOTIONS, null, pickPre);
-  renderChipGroup(postEmotionChipsEl, POST_EMOTIONS, null, pickPost);
-  renderChipGroup(confidenceChipsEl, CONFIDENCE_LEVELS, null, pickConfidence);
+  renderPreEmotionChips();
+  renderPostEmotionChips();
+  renderConfidenceChips();
 }
-function pickPre(val){ currentPreEmotion = val; renderChipGroup(preEmotionChipsEl, PRE_EMOTIONS, val, pickPre); }
-function pickPost(val){ currentPostEmotion = val; renderChipGroup(postEmotionChipsEl, POST_EMOTIONS, val, pickPost); }
-function pickConfidence(val){ currentConfidence = val; renderChipGroup(confidenceChipsEl, CONFIDENCE_LEVELS, val, pickConfidence); }
+
+function renderPreEmotionChips(){
+  renderMultiChipGroup(preEmotionChipsEl, PRE_EMOTIONS, currentPreEmotions, togglePre);
+}
+function renderPostEmotionChips(){
+  renderMultiChipGroup(postEmotionChipsEl, POST_EMOTIONS, currentPostEmotions, togglePost);
+}
+function togglePre(val){
+  const i = currentPreEmotions.indexOf(val);
+  if(i > -1) currentPreEmotions.splice(i,1); else currentPreEmotions.push(val);
+  renderPreEmotionChips();
+}
+function togglePost(val){
+  const i = currentPostEmotions.indexOf(val);
+  if(i > -1) currentPostEmotions.splice(i,1); else currentPostEmotions.push(val);
+  renderPostEmotionChips();
+}
+function renderMultiChipGroup(container, options, selectedArr, toggleFn){
+  container.innerHTML = options.map(opt => {
+    const isActive = selectedArr.includes(opt);
+    return `<button type="button" class="${isActive ? 'chip active':'chip'}" data-val="${escapeHtml(opt)}">${escapeHtml(opt)}</button>`;
+  }).join('');
+  container.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', () => toggleFn(btn.dataset.val)));
+}
+function renderConfidenceChips(){
+  confidenceChipsEl.innerHTML = CONFIDENCE_LEVELS.map(c => {
+    const isActive = c.value === currentConfidence;
+    return `<button type="button" class="${isActive ? 'chip active':'chip'}" data-val="${c.value}">${escapeHtml(c.label)}</button>`;
+  }).join('');
+  confidenceChipsEl.querySelectorAll('.chip').forEach(btn => {
+    btn.addEventListener('click', () => { currentConfidence = btn.dataset.val; renderConfidenceChips(); });
+  });
+}
+
+function openEditForm(trade){
+  resetForm();
+  editingTradeId = trade.id;
+  document.getElementById('ticketFormTitle').textContent = 'Edit Ticket';
+  saveBtn.textContent = 'Update Ticket';
+
+  currentCategory = trade.category || 'Custom';
+  renderCategoryChips();
+  if(currentCategory !== 'Custom' && CATEGORIES[currentCategory]){
+    symbolSelect.innerHTML = CATEGORIES[currentCategory].map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')
+      + `<option value="__other__">Other / not listed</option>`;
+    symbolSelectWrap.style.display = 'block';
+    if(CATEGORIES[currentCategory].includes(trade.symbol)){
+      symbolSelect.value = trade.symbol;
+      symbolCustomWrap.style.display = 'none';
+    } else {
+      symbolSelect.value = '__other__';
+      symbolCustomWrap.style.display = 'block';
+      symbolCustom.value = trade.symbol || '';
+    }
+  } else {
+    symbolSelectWrap.style.display = 'none';
+    symbolCustomWrap.style.display = 'block';
+    symbolCustom.value = trade.symbol || '';
+  }
+
+  document.getElementById('f-date').value = trade.trade_date;
+  document.getElementById('f-notes').value = trade.notes || '';
+  document.getElementById('f-reflection').value = trade.reflection || '';
+
+  currentAnswers = { ...trade.answers };
+  document.querySelectorAll('.yn-row').forEach(row => {
+    const q = row.dataset.q;
+    const val = currentAnswers[q];
+    row.querySelectorAll('.yn-btn').forEach(b => b.classList.remove('active-yes','active-no'));
+    if(val !== undefined){
+      const btn = row.querySelector(`.yn-btn[data-val="${val ? 'yes':'no'}"]`);
+      if(btn) btn.classList.add(val ? 'active-yes':'active-no');
+    }
+  });
+
+  currentPreEmotions = trade.pre_emotion ? trade.pre_emotion.split(', ').filter(Boolean) : [];
+  currentPostEmotions = trade.post_emotion ? trade.post_emotion.split(', ').filter(Boolean) : [];
+  currentConfidence = trade.confidence ? String(trade.confidence) : null;
+  renderPreEmotionChips();
+  renderPostEmotionChips();
+  renderConfidenceChips();
+
+  existingImageBeforePath = trade.image_path || null;
+  existingImageAfterPath = trade.image_path_after || null;
+  if(trade._imgBefore){
+    const p = document.getElementById('imgPreviewBefore');
+    p.src = trade._imgBefore; p.style.display = 'block';
+  }
+  if(trade._imgAfter){
+    const p = document.getElementById('imgPreviewAfter');
+    p.src = trade._imgAfter; p.style.display = 'block';
+  }
+
+  ticketForm.classList.add('open');
+  ticketForm.scrollIntoView({behavior:'smooth', block:'start'});
+}
 
 newTicketBtn.addEventListener('click', () => {
   resetForm();
@@ -530,37 +633,48 @@ saveBtn.addEventListener('click', async () => {
 
   if(!currentCategory){ alert('Pick a category.'); return; }
   if(!symbol){ alert('Pick or type a symbol.'); return; }
-  if(Object.keys(currentAnswers).length < QUESTIONS.length){ alert('Please answer all 5 checklist questions.'); return; }
+  if(Object.keys(currentAnswers).length < QUESTIONS.length){ alert('Please answer all 5 checklist questions (you can revise them later via Edit).'); return; }
 
+  const isEdit = !!editingTradeId;
   saveBtn.disabled = true;
-  saveBtn.textContent = 'SAVING...';
+  saveBtn.textContent = isEdit ? 'UPDATING...' : 'SAVING...';
   try{
-    let image_path = null, image_path_after = null;
+    let image_path = existingImageBeforePath;
+    let image_path_after = existingImageAfterPath;
+
     if(currentImageBeforeFile){
       const fn = `${currentUser.id}/${Date.now()}-before.jpg`;
       const { error } = await supabaseClient.storage.from('screenshots').upload(fn, currentImageBeforeFile, { contentType:'image/jpeg' });
       if(error) throw error;
+      if(existingImageBeforePath) await supabaseClient.storage.from('screenshots').remove([existingImageBeforePath]);
       image_path = fn;
     }
     if(currentImageAfterFile){
       const fn = `${currentUser.id}/${Date.now()}-after.jpg`;
       const { error } = await supabaseClient.storage.from('screenshots').upload(fn, currentImageAfterFile, { contentType:'image/jpeg' });
       if(error) throw error;
+      if(existingImageAfterPath) await supabaseClient.storage.from('screenshots').remove([existingImageAfterPath]);
       image_path_after = fn;
     }
 
-    const { error: insertErr } = await supabaseClient.from('trades').insert({
-      user_id: currentUser.id,
+    const payload = {
       category: currentCategory,
       symbol, trade_date, notes,
       answers: currentAnswers,
       image_path, image_path_after,
-      pre_emotion: currentPreEmotion,
+      pre_emotion: currentPreEmotions.join(', ') || null,
       confidence: currentConfidence ? parseInt(currentConfidence) : null,
-      post_emotion: currentPostEmotion,
+      post_emotion: currentPostEmotions.join(', ') || null,
       reflection
-    });
-    if(insertErr) throw insertErr;
+    };
+
+    if(isEdit){
+      const { error: updateErr } = await supabaseClient.from('trades').update(payload).eq('id', editingTradeId);
+      if(updateErr) throw updateErr;
+    } else {
+      const { error: insertErr } = await supabaseClient.from('trades').insert({ user_id: currentUser.id, ...payload });
+      if(insertErr) throw insertErr;
+    }
 
     ticketForm.classList.remove('open');
     await loadTrades();
@@ -569,7 +683,7 @@ saveBtn.addEventListener('click', async () => {
     alert('Could not save trade: ' + (err.message || 'unknown error'));
   } finally {
     saveBtn.disabled = false;
-    saveBtn.textContent = 'Save Ticket';
+    saveBtn.textContent = isEdit ? 'Update Ticket' : 'Save Ticket';
   }
 });
 
@@ -691,7 +805,10 @@ async function renderTickets(){
         <div class="ticket-score mono"><span>DISCIPLINED ${s.good}/5 &middot; SLIPS ${s.bad}/5</span><span>${s.pct}%</span></div>
         ${psychHtml}
         ${imgsHtml}
-        <button class="ticket-del" data-id="${t.id}" data-before="${t.image_path || ''}" data-after="${t.image_path_after || ''}">Delete ticket</button>
+        <div style="display:flex; gap:16px; margin-top:10px;">
+          <button class="ticket-edit" data-id="${t.id}">Edit ticket</button>
+          <button class="ticket-del" data-id="${t.id}" data-before="${t.image_path || ''}" data-after="${t.image_path_after || ''}">Delete ticket</button>
+        </div>
       </div>`;
   }).join('');
 
@@ -700,6 +817,12 @@ async function renderTickets(){
   });
   ticketsList.querySelectorAll('.ticket-del').forEach(btn => {
     btn.addEventListener('click', () => deleteTrade(btn.dataset.id, btn.dataset.before || null, btn.dataset.after || null));
+  });
+  ticketsList.querySelectorAll('.ticket-edit').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const trade = trades.find(t => t.id === btn.dataset.id);
+      if(trade) openEditForm(trade);
+    });
   });
 }
 
