@@ -59,6 +59,18 @@
   .stats{ margin:16px; border:1px solid var(--ink); background:var(--paper-dark); padding:14px 16px; }
   .stats-title{ font-family:ui-monospace,monospace; font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:8px; }
   .stats-note{ font-size:0.72rem; color:var(--ink-soft); font-style:italic; margin-top:8px; }
+  .stage-breakdown{ margin-top:14px; padding-top:12px; border-top:1px dashed var(--rule); }
+  .stage-breakdown-title{ font-family:ui-monospace,monospace; font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:8px; }
+  .stage-row{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .stage-row-label{ font-family:ui-monospace,monospace; font-size:0.66rem; width:74px; flex-shrink:0; color:var(--ink); text-transform:uppercase; }
+  .stage-bar-track{ flex:1; height:10px; background:var(--paper); border:1px solid var(--ink); overflow:hidden; }
+  .stage-bar-fill{ height:100%; background:var(--yes); }
+  .stage-bar-fill.low{ background:var(--no); }
+  .stage-bar-fill.mid{ background:var(--amber); }
+  .stage-row-pct{ font-family:ui-monospace,monospace; font-size:0.66rem; width:70px; flex-shrink:0; text-align:right; color:var(--ink-soft); }
+  .stage-tag{ display:inline-block; font-family:ui-monospace,monospace; font-size:0.6rem; letter-spacing:0.06em; color:var(--ink-soft); background:var(--paper); border:1px solid var(--rule); padding:1px 5px; margin-right:6px; vertical-align:middle; }
+  .failure-point{ margin-top:10px; padding:8px 10px; background:var(--no-bg,#F3E0DA); border-left:2px solid var(--no); font-family:ui-monospace,monospace; font-size:0.72rem; color:var(--no); }
+  .failure-point.none{ background:var(--yes-bg,#DEEBE2); border-left-color:var(--yes); color:var(--yes); }
   .bar{ height:22px; width:100%; display:flex; border:1px solid var(--ink); overflow:hidden; font-family:ui-monospace,monospace; font-size:0.68rem; }
   .bar-yes{ background:var(--yes); color:#fff; display:flex; align-items:center; justify-content:center; }
   .bar-no{ background:var(--no); color:#fff; display:flex; align-items:center; justify-content:center; }
@@ -217,7 +229,7 @@
   <div class="stats" id="statsBox">
     <div class="stats-title">Overall — Disciplined vs Undisciplined</div>
     <div id="statsContent"><div class="stats-empty">Log your first trade to see stats.</div></div>
-    <div class="stats-note">"No" on Chased Breakout / FOMO counts as disciplined — the score reflects good behavior, not raw Yes/No.</div>
+    <div class="stats-note">"No" on Psychology (greed/fear) counts as disciplined. Stage bars below show where discipline breaks down most.</div>
   </div>
 
   <button class="new-btn" id="newTicketBtn">+ New Trade Ticket</button>
@@ -269,16 +281,15 @@
       </div>
     </div>
 
-    <div class="form-section-title">Execution Checklist — At Entry</div>
-    <div class="yn-row" data-q="waitedSignal"><div class="yn-question">Did I wait for my signal?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
-    <div class="yn-row" data-q="plannedLocation"><div class="yn-question">Did I enter at my planned location?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
-    <div class="yn-row" data-q="positionSizing"><div class="yn-question">Did I follow my position sizing rule?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
-    <div class="yn-row" data-q="chasedBreakout"><div class="yn-question">Did I chase the breakout?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
-    <div class="yn-row" data-q="fomo"><div class="yn-question">Did I enter because I feared missing the move?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
-    <div class="yn-row" data-q="greedy"><div class="yn-question">Was I greedy (oversized the trade or pushed beyond my plan)?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+    <div class="form-section-title">Diagnostic Checklist — At Entry</div>
+    <div class="yn-row" data-q="setupOccurred"><div class="yn-question"><span class="stage-tag">SETUP</span>Did my setup actually occur?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+    <div class="yn-row" data-q="enteredPlannedLocation"><div class="yn-question"><span class="stage-tag">ENTRY</span>Did I enter at my planned location?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+    <div class="yn-row" data-q="positionSizeCorrect"><div class="yn-question"><span class="stage-tag">RISK</span>Was position size correct?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
 
-    <div class="form-section-title">Execution Checklist — At Exit <span style="text-transform:none; font-style:italic;">(fill in once the trade closes)</span></div>
-    <div class="yn-row" data-q="followedExit"><div class="yn-question">Did I follow my exit rules?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+    <div class="form-section-title">Diagnostic Checklist — At Exit <span style="text-transform:none; font-style:italic;">(fill in once the trade closes)</span></div>
+    <div class="yn-row" data-q="followedPlanAfterEntry"><div class="yn-question"><span class="stage-tag">MANAGEMENT</span>Did I follow the plan after entry?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+    <div class="yn-row" data-q="obeyedTpSl"><div class="yn-question"><span class="stage-tag">EXIT</span>Did I obey TP/SL rules?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+    <div class="yn-row" data-q="greedFearChangedActions"><div class="yn-question"><span class="stage-tag">PSYCHOLOGY</span>Did greed/fear change my actions?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
 
     <div class="form-section-title">Psychology</div>
     <div class="field">
@@ -344,15 +355,44 @@
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const QUESTIONS = [
-  { key:'waitedSignal', label:'Waited for signal', goodWhen:true, phase:'entry' },
-  { key:'plannedLocation', label:'Entered at planned location', goodWhen:true, phase:'entry' },
-  { key:'positionSizing', label:'Followed position sizing rule', goodWhen:true, phase:'entry' },
-  { key:'chasedBreakout', label:'Chased the breakout', goodWhen:false, phase:'entry' },
-  { key:'fomo', label:'Entered from FOMO', goodWhen:false, phase:'entry' },
-  { key:'greedy', label:'Was greedy', goodWhen:false, phase:'entry' },
-  { key:'followedExit', label:'Followed exit rules', goodWhen:true, phase:'exit' }
+  { key:'setupOccurred', label:'Setup actually occurred', goodWhen:true, phase:'entry', stage:'Setup' },
+  { key:'enteredPlannedLocation', label:'Entered at planned location', goodWhen:true, phase:'entry', stage:'Entry' },
+  { key:'positionSizeCorrect', label:'Position size was correct', goodWhen:true, phase:'entry', stage:'Risk' },
+  { key:'followedPlanAfterEntry', label:'Followed the plan after entry', goodWhen:true, phase:'exit', stage:'Management' },
+  { key:'obeyedTpSl', label:'Obeyed TP/SL rules', goodWhen:true, phase:'exit', stage:'Exit' },
+  { key:'greedFearChangedActions', label:'Greed/fear changed my actions', goodWhen:false, phase:'exit', stage:'Psychology' }
 ];
 const ENTRY_QUESTIONS = QUESTIONS.filter(q => q.phase === 'entry');
+const EXIT_QUESTIONS = QUESTIONS.filter(q => q.phase === 'exit');
+const STAGE_ORDER = ['Setup','Entry','Risk','Management','Exit','Psychology'];
+const DISCIPLINE_STAGES = ['Entry','Risk','Management','Exit'];
+
+function failurePointOf(trade){
+  for(const stage of STAGE_ORDER){
+    const q = QUESTIONS.find(qq => qq.stage === stage);
+    if(!q) continue;
+    const val = trade.answers[q.key];
+    if(val === undefined) continue;
+    if(val !== q.goodWhen) return stage;
+  }
+  return null;
+}
+
+function stageStatsAll(){
+  const result = {};
+  DISCIPLINE_STAGES.forEach(stage => {
+    const q = QUESTIONS.find(qq => qq.stage === stage);
+    let good = 0, total = 0;
+    trades.forEach(t => {
+      const val = t.answers[q.key];
+      if(val === undefined) return;
+      total++;
+      if(val === q.goodWhen) good++;
+    });
+    result[stage] = { good, total, pct: total ? Math.round((good/total)*100) : null };
+  });
+  return result;
+}
 
 const CATEGORIES = {
   'Forex': ['EUR/USD','GBP/USD','USD/JPY','USD/CHF','AUD/USD','USD/CAD','NZD/USD','EUR/GBP','EUR/JPY','GBP/JPY','EUR/CHF','AUD/JPY','CHF/JPY','EUR/AUD','GBP/AUD','CAD/JPY','NZD/JPY','GBP/CAD','EUR/CAD','AUD/CAD','AUD/NZD','AUD/CHF','GBP/CHF','GBP/NZD','EUR/NZD','USD/MXN','USD/ZAR','USD/TRY','USD/SEK','USD/NOK','USD/SGD','USD/CNH'],
@@ -894,6 +934,21 @@ function renderStats(){
     <div class="stats-numbers">
       <span class="yes-num">DISCIPLINED ${totalGood} (${goodPct}%)</span>
       <span class="no-num">SLIPS ${totalBad} (${badPct}%)</span>
+    </div>
+    <div class="stage-breakdown">
+      <div class="stage-breakdown-title">Discipline by Stage</div>
+      ${DISCIPLINE_STAGES.map(stage => {
+        const s = stageStatsAll()[stage];
+        if(s.total === 0){
+          return `<div class="stage-row"><div class="stage-row-label">${stage}</div><div class="stage-bar-track"></div><div class="stage-row-pct">—</div></div>`;
+        }
+        const fillCls = s.pct >= 70 ? '' : (s.pct >= 40 ? 'mid' : 'low');
+        return `<div class="stage-row">
+          <div class="stage-row-label">${stage}</div>
+          <div class="stage-bar-track"><div class="stage-bar-fill ${fillCls}" style="width:${s.pct}%"></div></div>
+          <div class="stage-row-pct">${s.pct}% (${s.good}/${s.total})</div>
+        </div>`;
+      }).join('')}
     </div>`;
 }
 
@@ -906,15 +961,19 @@ function stampFor(pct){
 
 function buildTicketCardHtml(t){
   const s = t._score;
-  const isOpen = t.answers['followedExit'] === undefined;
+  const isOpen = EXIT_QUESTIONS.some(q => t.answers[q.key] === undefined);
   const stamp = isOpen ? { cls:'mixed', text:'OPEN' } : stampFor(s.pct);
+  const fp = failurePointOf(t);
+  const failurePointHtml = fp
+    ? `<div class="failure-point">🎯 Failure Point: ${fp}</div>`
+    : (!isOpen ? `<div class="failure-point none">✅ No failure point identified</div>` : '');
   const answersHtml = QUESTIONS.map(q => {
     const val = t.answers[q.key];
     if(val === undefined){
-      return `<div class="ans"><span>${q.label}</span><span style="color:var(--amber); font-weight:bold;">PENDING</span></div>`;
+      return `<div class="ans"><span><span class="stage-tag">${q.stage.toUpperCase()}</span>${q.label}</span><span style="color:var(--amber); font-weight:bold;">PENDING</span></div>`;
     }
     const isGood = val === q.goodWhen;
-    return `<div class="ans"><span>${q.label}</span><span class="${isGood ? 'good':'bad'}">${val ? 'YES':'NO'}</span></div>`;
+    return `<div class="ans"><span><span class="stage-tag">${q.stage.toUpperCase()}</span>${q.label}</span><span class="${isGood ? 'good':'bad'}">${val ? 'YES':'NO'}</span></div>`;
   }).join('');
   const imgsHtml = (t._imgBefore || t._imgAfter) ? `
     <div class="img-pair">
@@ -943,6 +1002,7 @@ function buildTicketCardHtml(t){
         </div>
         <div class="stamp ${stamp.cls}">${stamp.text}</div>
       </div>
+      ${failurePointHtml}
       ${strategyHtml}
       ${t.notes ? `<div class="ticket-notes">${escapeHtml(t.notes)}</div>` : ''}
       <div class="ticket-answers">${answersHtml}</div>
