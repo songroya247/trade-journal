@@ -89,6 +89,9 @@
   .field{ margin-bottom:12px; }
   .field label{ display:block; font-family:ui-monospace,monospace; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; }
   .field input[type=text], .field input[type=date], .field textarea, .field select{ width:100%; padding:9px 10px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); font-family:inherit; font-size:0.9rem; }
+  .result-input-row{ display:flex; gap:6px; }
+  .result-input-row select{ flex:0 0 auto; width:auto; padding:9px 6px; }
+  .result-input-row input{ flex:1; min-width:0; }
   .field textarea{ resize:vertical; min-height:50px; }
 
   .chip-row{ display:flex; flex-wrap:wrap; gap:6px; }
@@ -128,6 +131,16 @@
 
   .search-bar{ margin:0 16px 12px; }
   .search-bar input{ width:100%; padding:10px 12px; border:1px solid var(--ink); background:var(--paper-dark); color:var(--ink); font-family:ui-monospace,monospace; font-size:0.8rem; }
+  .export-row{ margin:0 16px 8px; }
+  .export-panel{ display:none; margin:0 16px 16px; border:1px dashed var(--ink); background:var(--paper-dark); padding:14px; }
+  .export-panel.open{ display:block; }
+  .obs-preview-row{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .obs-preview-item{ position:relative; width:76px; height:76px; }
+  .obs-preview-item img{ width:100%; height:100%; object-fit:cover; border:1px solid var(--ink); display:block; }
+  .obs-preview-remove{ position:absolute; top:-7px; right:-7px; width:20px; height:20px; border-radius:50%; background:var(--no); color:#fff; border:none; font-size:0.65rem; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
+  .img-observations{ overflow-x:auto; flex-wrap:nowrap; }
+  .img-observations .img-pair-col{ flex:0 0 100px; }
+  .img-observations .ticket-img{ height:100px; }
   .review-btn{ font-family:ui-monospace,monospace; font-size:0.7rem; padding:6px 10px; border:1px solid var(--ink); background:var(--ink); color:var(--paper); cursor:pointer; letter-spacing:0.04em; }
   .sort-bar{ display:flex; align-items:center; justify-content:space-between; margin:0 16px 12px; font-family:ui-monospace,monospace; font-size:0.72rem; color:var(--ink-soft); }
 
@@ -158,6 +171,9 @@
   .stamp.disciplined{ color:var(--yes); border-color:var(--yes); }
   .stamp.impulse{ color:var(--no); border-color:var(--no); }
   .stamp.mixed{ color:var(--amber); border-color:var(--amber); }
+  .result-stamp{ font-family:ui-monospace,monospace; font-size:0.78rem; font-weight:bold; padding:3px 9px; border:1px solid; white-space:nowrap; }
+  .result-stamp.pos{ color:var(--yes); border-color:var(--yes); background:rgba(47,111,78,0.08); }
+  .result-stamp.neg{ color:var(--no); border-color:var(--no); background:rgba(174,62,43,0.08); }
   .ticket-notes{ font-size:0.82rem; color:var(--ink-soft); margin:8px 0; font-style:italic; }
   .ticket-answers{ display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; margin:10px 0; font-size:0.76rem; }
   .ans{ display:flex; justify-content:space-between; gap:6px; }
@@ -178,6 +194,8 @@
 
   .ticket-del{ background:none; border:none; color:var(--ink-soft); font-family:ui-monospace,monospace; font-size:0.68rem; text-decoration:underline; cursor:pointer; padding:0; }
   .ticket-edit{ background:none; border:none; color:var(--ink); font-family:ui-monospace,monospace; font-size:0.68rem; text-decoration:underline; cursor:pointer; padding:0; }
+  .ticket-share{ background:none; border:none; color:var(--amber); font-family:ui-monospace,monospace; font-size:0.68rem; text-decoration:underline; cursor:pointer; padding:0; }
+  .ticket-share:disabled{ opacity:0.5; cursor:default; }
   .empty-state{ margin:40px 16px; text-align:center; color:var(--ink-soft); font-size:0.9rem; }
   .lightbox{ display:none; position:fixed; inset:0; background:rgba(32,41,58,0.92); z-index:70; flex-direction:column; align-items:center; justify-content:center; padding:0; }
   .lightbox.open{ display:flex; }
@@ -271,6 +289,28 @@
     </div>
     <div class="field"><label>Date</label><input type="date" id="f-date"></div>
     <div class="field"><label>Notes (optional)</label><textarea id="f-notes" placeholder="Any context on this trade..."></textarea></div>
+    <div class="field">
+      <label>Result (optional)</label>
+      <div class="result-input-row" id="resultStructured">
+        <select id="f-result-outcome">
+          <option value="+">Profit +</option>
+          <option value="-">Loss -</option>
+        </select>
+        <select id="f-result-currency">
+          <option value="$">$ USD</option>
+          <option value="₦">₦ NGN</option>
+          <option value="€">€ EUR</option>
+          <option value="£">£ GBP</option>
+          <option value="¥">¥ JPY</option>
+          <option value="₹">₹ INR</option>
+          <option value="R">R (multiple)</option>
+          <option value="%">% Percent</option>
+          <option value="custom">Custom...</option>
+        </select>
+        <input type="text" id="f-result-amount" placeholder="Amount">
+      </div>
+      <input type="text" id="f-result-custom" placeholder="e.g. +150 pips" style="display:none; margin-top:8px; width:100%; padding:9px 10px; border:1px solid var(--ink); background:var(--paper); font-family:inherit; font-size:0.9rem;">
+    </div>
 
     <div class="field">
       <label>Screenshots (optional)</label>
@@ -286,6 +326,13 @@
           <img id="imgPreviewAfter" class="upload-preview" style="display:none;">
         </div>
       </div>
+    </div>
+
+    <div class="field">
+      <label>Observations (optional) — add more if you notice something later</label>
+      <div class="upload-box" id="uploadBoxObservation">+ Add Observation Image(s)</div>
+      <input type="file" id="f-image-observation" accept="image/*" multiple style="display:none;">
+      <div class="obs-preview-row" id="obsPreviewRow"></div>
     </div>
 
     <div class="form-section-title">Diagnostic Checklist — At Entry</div>
@@ -324,6 +371,15 @@
 
   <div class="search-bar">
     <input type="text" id="searchInput" placeholder="Search symbol, strategy, notes, emotion...">
+  </div>
+
+  <div class="export-row">
+    <button id="exportBtn" class="review-btn">📤 Export CSV</button>
+  </div>
+  <div class="export-panel" id="exportPanel">
+    <div class="field"><label>From</label><input type="date" id="exportFrom"></div>
+    <div class="field"><label>To</label><input type="date" id="exportTo"></div>
+    <button type="button" id="exportConfirm" class="new-btn" style="margin:0;">Download CSV</button>
   </div>
 
   <div class="sort-bar">
@@ -434,6 +490,7 @@ let currentConfidence = null;
 let currentImageBeforeFile = null, currentImageBeforePreview = null;
 let currentImageAfterFile = null, currentImageAfterPreview = null;
 let existingImageBeforePath = null, existingImageAfterPath = null;
+let observationItems = []; // { id, type:'existing'|'new', path?, file?, url? }
 let editingTradeId = null;
 let strategies = [];
 let currentStrategyId = null;
@@ -694,6 +751,11 @@ function resetForm(){
   document.getElementById('ticketFormTitle').textContent = 'New Ticket';
   saveBtn.textContent = 'Save Ticket';
   document.getElementById('f-notes').value = '';
+  resultOutcome.value = '+';
+  resultCurrency.value = '$';
+  resultAmount.value = '';
+  resultCustom.value = '';
+  updateResultVisibility();
   document.getElementById('f-reflection').value = '';
   document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
   symbolCustom.value = '';
@@ -706,8 +768,10 @@ function resetForm(){
   currentImageBeforeFile = null; currentImageBeforePreview = null;
   currentImageAfterFile = null; currentImageAfterPreview = null;
   existingImageBeforePath = null; existingImageAfterPath = null;
+  observationItems = [];
   document.getElementById('imgPreviewBefore').style.display = 'none';
   document.getElementById('imgPreviewAfter').style.display = 'none';
+  renderObservationList();
   symbolSelectWrap.style.display = 'none';
   symbolCustomWrap.style.display = 'none';
   newStrategyBox.classList.remove('open');
@@ -784,6 +848,15 @@ function openEditForm(trade){
 
   document.getElementById('f-date').value = trade.trade_date;
   document.getElementById('f-notes').value = trade.notes || '';
+  const parsedResult = parseResultAmount(trade.result_amount);
+  resultCurrency.value = parsedResult.isCustom ? 'custom' : parsedResult.currency;
+  if(parsedResult.isCustom){
+    resultCustom.value = trade.result_amount || '';
+  } else {
+    resultOutcome.value = parsedResult.outcome;
+    resultAmount.value = parsedResult.amount;
+  }
+  updateResultVisibility();
   document.getElementById('f-reflection').value = trade.reflection || '';
 
   currentAnswers = { ...trade.answers };
@@ -814,6 +887,14 @@ function openEditForm(trade){
     const p = document.getElementById('imgPreviewAfter');
     p.src = trade._imgAfter; p.style.display = 'block';
   }
+
+  observationItems = (trade.observation_paths || []).map((path, i) => ({
+    id: 'existing-' + path,
+    type: 'existing',
+    path,
+    url: (trade._obsUrls && trade._obsUrls[i]) ? trade._obsUrls[i] : null
+  }));
+  renderObservationList();
 
   ticketForm.classList.add('open');
   ticketForm.scrollIntoView({behavior:'smooth', block:'start'});
@@ -875,10 +956,83 @@ function wireUpload(boxId, inputId, previewId, setFile){
 wireUpload('uploadBoxBefore','f-image-before','imgPreviewBefore', (blob,url) => { currentImageBeforeFile = blob; currentImageBeforePreview = url; });
 wireUpload('uploadBoxAfter','f-image-after','imgPreviewAfter', (blob,url) => { currentImageAfterFile = blob; currentImageAfterPreview = url; });
 
+const resultOutcome = document.getElementById('f-result-outcome');
+const resultCurrency = document.getElementById('f-result-currency');
+const resultAmount = document.getElementById('f-result-amount');
+const resultCustom = document.getElementById('f-result-custom');
+const resultStructured = document.getElementById('resultStructured');
+
+function updateResultVisibility(){
+  const isCustom = resultCurrency.value === 'custom';
+  resultOutcome.style.display = isCustom ? 'none' : '';
+  resultAmount.style.display = isCustom ? 'none' : '';
+  resultCustom.style.display = isCustom ? 'block' : 'none';
+}
+resultCurrency.addEventListener('change', updateResultVisibility);
+
+function buildResultAmount(){
+  if(resultCurrency.value === 'custom') return resultCustom.value.trim();
+  const amt = resultAmount.value.trim();
+  if(!amt) return '';
+  const sign = resultOutcome.value === '-' ? '-' : '+';
+  const cur = resultCurrency.value;
+  if(cur === 'R' || cur === '%') return `${sign}${amt}${cur}`;
+  return `${sign}${cur}${amt}`;
+}
+
+function parseResultAmount(str){
+  if(!str) return { outcome:'+', currency:'$', amount:'', isCustom:false };
+  let s = str.trim();
+  let outcome = '+';
+  if(s.startsWith('-')){ outcome = '-'; s = s.slice(1); }
+  else if(s.startsWith('+')){ outcome = '+'; s = s.slice(1); }
+  const prefixCurrencies = ['₦','$','€','£','¥','₹'];
+  for(const c of prefixCurrencies){
+    if(s.startsWith(c)) return { outcome, currency:c, amount:s.slice(c.length).trim(), isCustom:false };
+  }
+  const suffixCurrencies = ['R','%'];
+  for(const c of suffixCurrencies){
+    if(s.endsWith(c)) return { outcome, currency:c, amount:s.slice(0, -c.length).trim(), isCustom:false };
+  }
+  return { outcome:'+', currency:'custom', amount:'', isCustom:true };
+}
+
+const uploadBoxObservation = document.getElementById('uploadBoxObservation');
+const fileInputObservation = document.getElementById('f-image-observation');
+const obsPreviewRow = document.getElementById('obsPreviewRow');
+
+uploadBoxObservation.addEventListener('click', () => fileInputObservation.click());
+fileInputObservation.addEventListener('change', (e) => {
+  const files = Array.from(e.target.files || []);
+  files.forEach(file => {
+    compressImage(file, (blob, url) => {
+      observationItems.push({ id: 'new-' + Date.now() + '-' + Math.random().toString(36).slice(2,7), type:'new', file: blob, url });
+      renderObservationList();
+    });
+  });
+  fileInputObservation.value = '';
+});
+
+function renderObservationList(){
+  obsPreviewRow.innerHTML = observationItems.map(item => `
+    <div class="obs-preview-item">
+      <img src="${item.url || ''}">
+      <button type="button" class="obs-preview-remove" data-id="${item.id}">✕</button>
+    </div>
+  `).join('');
+  obsPreviewRow.querySelectorAll('.obs-preview-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      observationItems = observationItems.filter(it => it.id !== btn.dataset.id);
+      renderObservationList();
+    });
+  });
+}
+
 saveBtn.addEventListener('click', async () => {
   const symbol = getSelectedSymbol();
   const trade_date = document.getElementById('f-date').value || new Date().toISOString().slice(0,10);
   const notes = document.getElementById('f-notes').value.trim();
+  const result_amount = buildResultAmount();
   const reflection = document.getElementById('f-reflection').value.trim();
 
   if(!currentCategory){ alert('Pick a category.'); return; }
@@ -908,12 +1062,28 @@ saveBtn.addEventListener('click', async () => {
       image_path_after = fn;
     }
 
+    // Observations: delete removed ones, upload new ones
+    const originalTrade = isEdit ? trades.find(t => t.id === editingTradeId) : null;
+    const originalObsPaths = (originalTrade && originalTrade.observation_paths) ? originalTrade.observation_paths : [];
+    const keptExistingPaths = observationItems.filter(it => it.type === 'existing').map(it => it.path);
+    const toDeletePaths = originalObsPaths.filter(p => !keptExistingPaths.includes(p));
+    if(toDeletePaths.length) await supabaseClient.storage.from('screenshots').remove(toDeletePaths);
+
+    const newObsPaths = [];
+    for(const item of observationItems.filter(it => it.type === 'new')){
+      const fn = `${currentUser.id}/${Date.now()}-obs-${Math.random().toString(36).slice(2,8)}.jpg`;
+      const { error } = await supabaseClient.storage.from('screenshots').upload(fn, item.file, { contentType:'image/jpeg' });
+      if(error) throw error;
+      newObsPaths.push(fn);
+    }
+    const observation_paths = [...keptExistingPaths, ...newObsPaths];
+
     const payload = {
       category: currentCategory,
       strategy_id: currentStrategyId,
-      symbol, trade_date, notes,
+      symbol, trade_date, notes, result_amount,
       answers: currentAnswers,
-      image_path, image_path_after,
+      image_path, image_path_after, observation_paths,
       pre_emotion: currentPreEmotions.join(', ') || null,
       confidence: currentConfidence ? parseInt(currentConfidence) : null,
       post_emotion: currentPostEmotions.join(', ') || null,
@@ -1038,6 +1208,10 @@ function buildTicketCardHtml(t){
       ${t._imgBefore ? `<div class="img-pair-col"><div class="img-pair-label">Before</div><img class="ticket-img" src="${t._imgBefore}" data-full="${t._imgBefore}"></div>` : ''}
       ${t._imgAfter ? `<div class="img-pair-col"><div class="img-pair-label">After</div><img class="ticket-img" src="${t._imgAfter}" data-full="${t._imgAfter}"></div>` : ''}
     </div>` : '';
+  const obsHtml = (t._obsUrls && t._obsUrls.length) ? `
+    <div class="img-pair img-observations">
+      ${t._obsUrls.map((url, i) => `<div class="img-pair-col"><div class="img-pair-label">Obs ${i+1}</div><img class="ticket-img" src="${url}" data-full="${url}"></div>`).join('')}
+    </div>` : '';
   const psychHtml = (t.pre_emotion || t.post_emotion || t.confidence || t.reflection) ? `
     <div class="psych-block">
       ${t.pre_emotion ? `<div class="psych-row"><span>Before</span><span>${escapeHtml(t.pre_emotion)}</span></div>` : ''}
@@ -1050,6 +1224,7 @@ function buildTicketCardHtml(t){
     <div class="ticket-strategy">📐 ${escapeHtml(strategy.name)}</div>
     ${strategy.description ? `<div class="ticket-strategy-desc">${escapeHtml(strategy.description)}</div>` : ''}
   ` : '';
+  const resultHtml = t.result_amount ? `<div class="result-stamp ${t.result_amount.trim().startsWith('-') ? 'neg' : 'pos'}">${escapeHtml(t.result_amount)}</div>` : '';
   return `
     <div class="ticket">
       <div class="ticket-top">
@@ -1058,7 +1233,10 @@ function buildTicketCardHtml(t){
           <div class="ticket-category">${escapeHtml(t.category || '')}</div>
           <div class="ticket-date">${t.trade_date}</div>
         </div>
-        <div class="stamp ${stamp.cls}">${stamp.text}</div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+          <div class="stamp ${stamp.cls}">${stamp.text}</div>
+          ${resultHtml}
+        </div>
       </div>
       ${failurePointHtml}
       ${strategyHtml}
@@ -1067,8 +1245,10 @@ function buildTicketCardHtml(t){
       <div class="ticket-score mono"><span>DISCIPLINED ${s.good}/${s.answered} &middot; SLIPS ${s.bad}/${s.answered}</span><span>${s.pct}%</span></div>
       ${psychHtml}
       ${imgsHtml}
-      <div style="display:flex; gap:16px; margin-top:10px;">
+      ${obsHtml}
+      <div style="display:flex; gap:16px; margin-top:10px; flex-wrap:wrap;">
         <button class="ticket-edit" data-id="${t.id}">Edit ticket</button>
+        <button class="ticket-share" data-id="${t.id}">Share recap</button>
         <button class="ticket-del" data-id="${t.id}" data-before="${t.image_path || ''}" data-after="${t.image_path_after || ''}">Delete ticket</button>
       </div>
     </div>`;
@@ -1103,6 +1283,168 @@ function wireTicketCardHandlers(containerEl, fromReview){
       }
     });
   });
+  containerEl.querySelectorAll('.ticket-share').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const trade = trades.find(t => t.id === btn.dataset.id);
+      if(!trade) return;
+      btn.disabled = true;
+      const original = btn.textContent;
+      btn.textContent = 'Generating...';
+      try{
+        await generateShareCard(trade);
+      } catch(err){
+        console.error(err);
+        alert('Could not generate the share image. This can happen if the screenshots can\'t be loaded securely for sharing — try again, or save your screenshots manually.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = original;
+      }
+    });
+  });
+}
+
+function loadImageEl(url){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+function drawImageCover(ctx, img, x, y, w, h){
+  const imgRatio = img.width / img.height;
+  const boxRatio = w / h;
+  let sx, sy, sw, sh;
+  if(imgRatio > boxRatio){
+    sh = img.height; sw = sh * boxRatio; sx = (img.width - sw) / 2; sy = 0;
+  } else {
+    sw = img.width; sh = sw / boxRatio; sx = 0; sy = (img.height - sh) / 2;
+  }
+  ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+}
+
+async function generateShareCard(trade){
+  const W = 1080, H = 1350;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Background (ledger paper look)
+  ctx.fillStyle = '#EDEAE0';
+  ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(198,191,169,0.6)';
+  ctx.lineWidth = 1;
+  for(let y = 60; y < H; y += 42){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  // Header
+  ctx.fillStyle = '#20293A';
+  ctx.font = 'bold 58px Georgia, serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(trade.symbol, 50, 100);
+  ctx.font = '26px Menlo, monospace';
+  ctx.fillStyle = '#5B6472';
+  ctx.fillText(`${trade.trade_date}   ·   ${trade.category || ''}`, 50, 140);
+
+  const strategy = trade.strategy_id ? strategies.find(s => s.id === trade.strategy_id) : null;
+  if(strategy){
+    ctx.font = '24px Menlo, monospace';
+    ctx.fillStyle = '#20293A';
+    ctx.fillText(`📐 ${strategy.name}`, 50, 175);
+  }
+
+  let cursorY = strategy ? 210 : 175;
+
+  // Before/After images side by side
+  const imgs = [];
+  if(trade._imgBefore) imgs.push({ url: trade._imgBefore, label: 'BEFORE' });
+  if(trade._imgAfter) imgs.push({ url: trade._imgAfter, label: 'AFTER' });
+  if(imgs.length){
+    const gap = 24, pad = 50;
+    const imgH = 560;
+    const imgW = (W - pad * 2 - gap * (imgs.length - 1)) / imgs.length;
+    for(let i = 0; i < imgs.length; i++){
+      const loaded = await loadImageEl(imgs[i].url);
+      const x = pad + i * (imgW + gap);
+      drawImageCover(ctx, loaded, x, cursorY, imgW, imgH);
+      ctx.strokeStyle = '#20293A'; ctx.lineWidth = 3;
+      ctx.strokeRect(x, cursorY, imgW, imgH);
+      ctx.fillStyle = '#20293A';
+      ctx.fillRect(x, cursorY + imgH, imgW, 42);
+      ctx.fillStyle = '#EDEAE0';
+      ctx.font = 'bold 22px Menlo, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(imgs[i].label, x + imgW / 2, cursorY + imgH + 28);
+    }
+    ctx.textAlign = 'left';
+    cursorY += imgH + 70;
+  } else {
+    cursorY += 40;
+  }
+
+  // Discipline stamp (rotated, like the in-app card)
+  const s = scoreOf(trade);
+  const isOpen = EXIT_QUESTIONS.some(q => trade.answers[q.key] === undefined);
+  const stamp = isOpen ? { text:'OPEN', color:'#B4801F' } : (() => {
+    const st = stampFor(s.pct);
+    return { text: st.text, color: st.cls === 'disciplined' ? '#2F6F4E' : st.cls === 'impulse' ? '#AE3E2B' : '#B4801F' };
+  })();
+
+  ctx.save();
+  ctx.translate(W / 2, cursorY + 50);
+  ctx.rotate(-4 * Math.PI / 180);
+  ctx.font = 'bold 50px Menlo, monospace';
+  ctx.textAlign = 'center';
+  const stampW = ctx.measureText(stamp.text).width;
+  ctx.strokeStyle = stamp.color; ctx.lineWidth = 5;
+  ctx.strokeRect(-stampW/2 - 24, -40, stampW + 48, 78);
+  ctx.fillStyle = stamp.color;
+  ctx.fillText(stamp.text, 0, 15);
+  ctx.restore();
+  cursorY += 130;
+
+  // Result / P&L stamp beneath
+  if(trade.result_amount){
+    const isNeg = trade.result_amount.trim().startsWith('-');
+    ctx.font = 'bold 62px Menlo, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = isNeg ? '#AE3E2B' : '#2F6F4E';
+    ctx.fillText(trade.result_amount, W / 2, cursorY + 30);
+    cursorY += 90;
+  }
+
+  // Footer branding
+  ctx.font = '22px Menlo, monospace';
+  ctx.fillStyle = '#5B6472';
+  ctx.textAlign = 'center';
+  ctx.fillText('tradejournal.ultimateedge.info', W / 2, H - 36);
+  ctx.textAlign = 'left';
+
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+  await shareOrDownloadImage(blob, trade);
+}
+
+async function shareOrDownloadImage(blob, trade){
+  const filename = `${(trade.symbol || 'trade').replace(/[^a-z0-9]/gi,'_')}_${trade.trade_date}.png`;
+  const file = new File([blob], filename, { type:'image/png' });
+
+  if(navigator.canShare && navigator.canShare({ files:[file] })){
+    try{
+      await navigator.share({ files:[file], title: `${trade.symbol} Trade Recap`, text: 'My trade recap' });
+      return;
+    } catch(err){
+      if(err.name === 'AbortError') return;
+    }
+  }
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 async function getVisibleTrades(){
@@ -1134,6 +1476,10 @@ async function getVisibleTrades(){
   });
 
   await Promise.all(list.map(async t => {
+    const now = Date.now();
+    const isStale = !t._urlCacheAt || (now - t._urlCacheAt) > 45 * 60 * 1000;
+    if(!isStale) return t;
+
     if(t.image_path){
       const { data } = await supabaseClient.storage.from('screenshots').createSignedUrl(t.image_path, 3600);
       t._imgBefore = data ? data.signedUrl : null;
@@ -1142,6 +1488,15 @@ async function getVisibleTrades(){
       const { data } = await supabaseClient.storage.from('screenshots').createSignedUrl(t.image_path_after, 3600);
       t._imgAfter = data ? data.signedUrl : null;
     }
+    if(t.observation_paths && t.observation_paths.length){
+      t._obsUrls = await Promise.all(t.observation_paths.map(async p => {
+        const { data } = await supabaseClient.storage.from('screenshots').createSignedUrl(p, 3600);
+        return data ? data.signedUrl : null;
+      }));
+    } else {
+      t._obsUrls = [];
+    }
+    t._urlCacheAt = now;
     return t;
   }));
 
@@ -1247,6 +1602,70 @@ async function loadTrades(){
   renderStats();
   renderTickets();
 }
+
+// ---- Export ----
+const exportBtn = document.getElementById('exportBtn');
+const exportPanel = document.getElementById('exportPanel');
+const exportFrom = document.getElementById('exportFrom');
+const exportTo = document.getElementById('exportTo');
+const exportConfirm = document.getElementById('exportConfirm');
+
+exportBtn.addEventListener('click', () => {
+  exportPanel.classList.toggle('open');
+  if(exportPanel.classList.contains('open') && trades.length){
+    const dates = trades.map(t => t.trade_date).sort();
+    if(!exportFrom.value) exportFrom.value = dates[0];
+    if(!exportTo.value) exportTo.value = dates[dates.length - 1];
+  }
+});
+
+function csvEscape(val){
+  if(val === null || val === undefined) return '';
+  const str = String(val);
+  if(/[",\n]/.test(str)) return '"' + str.replace(/"/g, '""') + '"';
+  return str;
+}
+
+function exportToCsv(list, from, to){
+  const headers = ['Date','Category','Symbol','Strategy','Setup','Entry','Risk','Management','Exit','Psychology','Discipline %','Failure Point','Pre-Emotion','Confidence','Post-Emotion','Notes','Reflection'];
+  const rows = list.map(t => {
+    const strategy = t.strategy_id ? strategies.find(s => s.id === t.strategy_id) : null;
+    const s = scoreOf(t);
+    const fp = failurePointOf(t) || 'None';
+    const ans = key => {
+      const v = t.answers[key];
+      return v === undefined ? 'Pending' : (v ? 'Yes' : 'No');
+    };
+    return [
+      t.trade_date, t.category || '', t.symbol || '', strategy ? strategy.name : '',
+      ans('setupOccurred'), ans('enteredPlannedLocation'), ans('positionSizeCorrect'),
+      ans('followedPlanAfterEntry'), ans('obeyedTpSl'), ans('greedFearChangedActions'),
+      s.answered ? s.pct + '%' : 'N/A', fp,
+      t.pre_emotion || '', t.confidence || '', t.post_emotion || '',
+      t.notes || '', t.reflection || ''
+    ].map(csvEscape).join(',');
+  });
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `trade-journal_${from}_to_${to}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+exportConfirm.addEventListener('click', () => {
+  const from = exportFrom.value;
+  const to = exportTo.value;
+  if(!from || !to){ alert('Pick both a start and end date.'); return; }
+  const filtered = trades.filter(t => t.trade_date >= from && t.trade_date <= to);
+  if(filtered.length === 0){ alert('No trades in that date range.'); return; }
+  exportToCsv(filtered, from, to);
+  exportPanel.classList.remove('open');
+});
 </script>
 
 </body>
