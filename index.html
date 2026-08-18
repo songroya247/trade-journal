@@ -1,33 +1,53 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trade Discipline Ledger</title>
+<title>Trade Discipline Ledger & Zone Flip™</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
-<script>
-  window.addEventListener('error', function(e){
-    console.error('Page error:', e.message, 'at', e.filename + ':' + e.lineno);
-  });
-</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --paper:#EDEAE0; --paper-dark:#E2DDCE; --ink:#20293A; --ink-soft:#5B6472;
     --rule:#C6BFA9; --yes:#2F6F4E; --no:#AE3E2B; --amber:#B4801F;
+    --violet: #5B4CFF; --violet-light: #EFEBFF;
+    --emerald: #0EBE7F; --emerald-light: #E3FBF1;
+    --coral: #FF4E63; --coral-light: #FFE9EC;
+    --amber-light: #FFF3DE; --gold: #FFB800;
+    --display: 'Sora', -apple-system, sans-serif; 
+    --sans: 'Inter', -apple-system, sans-serif; 
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
   }
-  *{box-sizing:border-box;}
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
   body{
-    margin:0; background:var(--paper);
+    background:
+      radial-gradient(ellipse 600px 360px at 10% -10%, rgba(91,76,255,0.09), transparent),
+      radial-gradient(ellipse 600px 360px at 100% 0%, rgba(255,78,99,0.07), transparent),
+      var(--paper);
     background-image:linear-gradient(var(--paper) 0px, var(--paper) 27px, var(--rule) 28px);
     background-size:100% 28px; color:var(--ink);
     font-family:ui-serif, Georgia, "Times New Roman", serif; padding:0 0 60px;
   }
-  .mono{ font-family:ui-monospace,"SF Mono","Menlo","Consolas",monospace; }
-  header{ padding:22px 18px 14px; border-bottom:2px solid var(--ink); background:var(--paper); position:sticky; top:0; z-index:5; }
-  header h1{ margin:0; font-size:1.5rem; letter-spacing:0.02em; }
-  header .sub{ font-family:ui-monospace,monospace; font-size:0.72rem; color:var(--ink-soft); letter-spacing:0.08em; text-transform:uppercase; margin-top:4px; }
+  .mono{ font-family:var(--mono); }
+  
+  header{ padding:16px 18px 0; border-bottom:2px solid var(--ink); background:var(--paper); position:sticky; top:0; z-index:20; }
+  .header-top{ display:flex; justify-content:space-between; align-items:center; }
+  header h1{ margin:0; font-size:1.35rem; letter-spacing:0.02em; }
+  header .sub{ font-family:var(--mono); font-size:0.68rem; color:var(--ink-soft); letter-spacing:0.08em; text-transform:uppercase; margin-top:2px; }
+  .signout{ font-family:var(--mono); font-size:0.68rem; color:var(--ink-soft); text-decoration:underline; cursor:pointer; }
 
-  /* Auth screen */
+  .main-tabs{ display:flex; margin-top:12px; border-bottom:2px solid var(--ink); }
+  .main-tab{
+    flex:1; text-align:center; padding:11px 8px; background:var(--paper-dark); border:1px solid var(--ink); border-bottom:none;
+    font-family:var(--mono); font-size:0.75rem; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--ink-soft); cursor:pointer; position:relative; border-radius:6px 6px 0 0; transition:all 0.15s ease;
+  }
+  .main-tab.active{ background:var(--ink); color:var(--paper); font-weight:bold; }
+  .main-tab .tab-icon{ margin-right:5px; }
+
   .auth-wrap{ max-width:380px; margin:60px auto; padding:0 18px; }
   .auth-box{ border:1px solid var(--ink); background:var(--paper-dark); padding:22px; }
   .auth-box h2{ margin:0 0 6px; font-size:1.15rem; }
@@ -37,16 +57,12 @@
   .pw-wrap input{ padding-right:52px !important; margin-bottom:0 !important; }
   .pw-toggle{
     position:absolute; right:10px; top:50%; transform:translateY(-50%);
-    width:auto !important; height:auto !important;
-    background:none !important; border:none !important;
-    color:var(--ink-soft) !important; cursor:pointer; padding:4px !important;
-    margin:0 !important; display:flex; align-items:center; justify-content:center;
-    text-transform:none !important;
+    width:auto !important; height:auto !important; background:none !important; border:none !important;
+    color:var(--ink-soft) !important; cursor:pointer; padding:4px !important; margin:0 !important;
   }
   .pw-toggle svg{ width:19px; height:19px; display:block; }
-  .pw-toggle:active{ color:var(--ink) !important; }
   .pw-wrap-outer{ margin-bottom:10px; }
-  .auth-box button{ width:100%; padding:12px; background:var(--ink); color:var(--paper); border:none; font-family:ui-monospace,monospace; font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; margin-top:4px; }
+  .auth-box button{ width:100%; padding:12px; background:var(--ink); color:var(--paper); border:none; font-family:var(--mono); font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; margin-top:4px; }
   .auth-toggle{ text-align:center; margin-top:12px; font-size:0.78rem; color:var(--ink-soft); }
   .auth-toggle a{ color:var(--ink); cursor:pointer; text-decoration:underline; }
   .auth-msg{ font-size:0.78rem; margin-top:10px; }
@@ -54,40 +70,41 @@
   .auth-msg.ok{ color:var(--yes); }
 
   .app{ display:none; }
-  .signout{ float:right; font-family:ui-monospace,monospace; font-size:0.68rem; color:var(--ink-soft); text-decoration:underline; cursor:pointer; }
+  .tab-view{ display:none; padding-top:16px; }
+  .tab-view.active{ display:block; }
 
-  .stats{ margin:16px; border:1px solid var(--ink); background:var(--paper-dark); padding:14px 16px; }
-  .stats-title{ font-family:ui-monospace,monospace; font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:8px; }
+  .stats{ margin:0 16px 16px; border:1px solid var(--ink); background:var(--paper-dark); padding:14px 16px; }
+  .stats-title{ font-family:var(--mono); font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:8px; }
   .stats-note{ font-size:0.72rem; color:var(--ink-soft); font-style:italic; margin-top:8px; }
   .stage-breakdown{ margin-top:14px; padding-top:12px; border-top:1px dashed var(--rule); }
-  .stage-breakdown-title{ font-family:ui-monospace,monospace; font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:8px; }
+  .stage-breakdown-title{ font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:8px; }
   .stage-row{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
-  .stage-row-label{ font-family:ui-monospace,monospace; font-size:0.66rem; width:74px; flex-shrink:0; color:var(--ink); text-transform:uppercase; }
+  .stage-row-label{ font-family:var(--mono); font-size:0.66rem; width:74px; flex-shrink:0; color:var(--ink); text-transform:uppercase; }
   .stage-bar-track{ flex:1; height:10px; background:var(--paper); border:1px solid var(--ink); overflow:hidden; }
   .stage-bar-fill{ height:100%; background:var(--yes); }
   .stage-bar-fill.low{ background:var(--no); }
   .stage-bar-fill.mid{ background:var(--amber); }
-  .stage-row-pct{ font-family:ui-monospace,monospace; font-size:0.66rem; width:70px; flex-shrink:0; text-align:right; color:var(--ink-soft); }
-  .stage-tag{ display:inline-block; font-family:ui-monospace,monospace; font-size:0.6rem; letter-spacing:0.06em; color:var(--ink-soft); background:var(--paper); border:1px solid var(--rule); padding:1px 5px; margin-right:6px; vertical-align:middle; }
-  .failure-point{ margin-top:10px; padding:8px 10px; background:var(--no-bg,#F3E0DA); border-left:2px solid var(--no); font-family:ui-monospace,monospace; font-size:0.72rem; color:var(--no); }
-  .failure-point.none{ background:var(--yes-bg,#DEEBE2); border-left-color:var(--yes); color:var(--yes); }
-  .bar{ height:22px; width:100%; display:flex; border:1px solid var(--ink); overflow:hidden; font-family:ui-monospace,monospace; font-size:0.68rem; }
+  .stage-row-pct{ font-family:var(--mono); font-size:0.66rem; width:70px; flex-shrink:0; text-align:right; color:var(--ink-soft); }
+  .stage-tag{ display:inline-block; font-family:var(--mono); font-size:0.6rem; letter-spacing:0.06em; color:var(--ink-soft); background:var(--paper); border:1px solid var(--rule); padding:1px 5px; margin-right:6px; vertical-align:middle; }
+  .failure-point{ margin-top:10px; padding:8px 10px; background:#F3E0DA; border-left:2px solid var(--no); font-family:var(--mono); font-size:0.72rem; color:var(--no); }
+  .failure-point.none{ background:#DEEBE2; border-left-color:var(--yes); color:var(--yes); }
+  .bar{ height:22px; width:100%; display:flex; border:1px solid var(--ink); overflow:hidden; font-family:var(--mono); font-size:0.68rem; }
   .bar-yes{ background:var(--yes); color:#fff; display:flex; align-items:center; justify-content:center; }
   .bar-no{ background:var(--no); color:#fff; display:flex; align-items:center; justify-content:center; }
-  .stats-numbers{ display:flex; justify-content:space-between; margin-top:8px; font-family:ui-monospace,monospace; font-size:0.78rem; }
+  .stats-numbers{ display:flex; justify-content:space-between; margin-top:8px; font-family:var(--mono); font-size:0.78rem; }
   .stats-numbers .yes-num{ color:var(--yes); font-weight:bold; }
   .stats-numbers .no-num{ color:var(--no); font-weight:bold; }
   .stats-empty{ font-size:0.85rem; color:var(--ink-soft); font-style:italic; }
 
-  .new-btn{ display:block; width:calc(100% - 32px); margin:0 16px 16px; padding:14px; background:var(--ink); color:var(--paper); border:none; font-family:ui-monospace,monospace; font-size:0.82rem; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; }
+  .new-btn{ display:block; width:calc(100% - 32px); margin:0 16px 16px; padding:14px; background:var(--ink); color:var(--paper); border:none; font-family:var(--mono); font-size:0.82rem; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; }
 
   .ticket-form{ margin:0 16px 20px; border:1px dashed var(--ink); background:var(--paper-dark); padding:16px; display:none; }
   .ticket-form.open{ display:block; }
   .ticket-form h2{ font-size:1.05rem; margin:0 0 4px; }
-  .form-section-title{ font-family:ui-monospace,monospace; font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); margin:20px 0 10px; padding-top:14px; border-top:1px solid var(--rule); }
+  .form-section-title{ font-family:var(--mono); font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); margin:20px 0 10px; padding-top:14px; border-top:1px solid var(--rule); }
   .form-section-title:first-of-type{ border-top:none; padding-top:0; margin-top:14px; }
   .field{ margin-bottom:12px; }
-  .field label{ display:block; font-family:ui-monospace,monospace; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; }
+  .field label{ display:block; font-family:var(--mono); font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:6px; }
   .field input[type=text], .field input[type=date], .field textarea, .field select{ width:100%; padding:9px 10px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); font-family:inherit; font-size:0.9rem; }
   .result-input-row{ display:flex; gap:6px; }
   .result-input-row select{ flex:0 0 auto; width:auto; padding:9px 6px; }
@@ -99,38 +116,35 @@
   .new-strategy-box{ display:none; border:1px dashed var(--ink); background:var(--paper); padding:12px; margin-top:8px; }
   .new-strategy-box.open{ display:block; }
   .new-strategy-box input, .new-strategy-box textarea{ width:100%; padding:8px; border:1px solid var(--ink); background:var(--paper-dark); font-family:inherit; font-size:0.85rem; margin-bottom:8px; }
-  .new-strategy-box textarea{ min-height:40px; resize:vertical; }
   .new-strategy-actions{ display:flex; gap:8px; }
-  .new-strategy-actions button{ flex:1; padding:9px; font-family:ui-monospace,monospace; font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; border:1px solid var(--ink); }
+  .new-strategy-actions button{ flex:1; padding:9px; font-family:var(--mono); font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; border:1px solid var(--ink); }
   .strategy-add-btn{ background:var(--ink); color:var(--paper); }
   .strategy-cancel-btn{ background:var(--paper); color:var(--ink); }
-  .ticket-strategy{ font-family:ui-monospace,monospace; font-size:0.7rem; color:var(--ink); background:var(--paper-dark); display:inline-block; padding:2px 8px; margin-top:6px; border:1px solid var(--rule); }
+  .ticket-strategy{ font-family:var(--mono); font-size:0.7rem; color:var(--ink); background:var(--paper-dark); display:inline-block; padding:2px 8px; margin-top:6px; border:1px solid var(--rule); }
   .ticket-strategy-desc{ font-size:0.76rem; color:var(--ink-soft); font-style:italic; margin-top:3px; }
-  .chip{ font-family:ui-monospace,monospace; font-size:0.72rem; padding:8px 12px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); cursor:pointer; }
+  .chip{ font-family:var(--mono); font-size:0.72rem; padding:8px 12px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); cursor:pointer; }
   .chip.active{ background:var(--ink); color:var(--paper); }
-  .chip.active-yes{ background:var(--yes); color:#fff; border-color:var(--yes); }
-  .chip.active-no{ background:var(--no); color:#fff; border-color:var(--no); }
 
   .yn-row{ display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--rule); gap:10px; }
   .yn-row:last-of-type{ border-bottom:none; }
   .yn-question{ font-size:0.85rem; flex:1; line-height:1.3; }
   .yn-toggle{ display:flex; gap:6px; flex-shrink:0; }
-  .yn-btn{ font-family:ui-monospace,monospace; font-size:0.72rem; letter-spacing:0.05em; padding:7px 12px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); cursor:pointer; }
+  .yn-btn{ font-family:var(--mono); font-size:0.72rem; letter-spacing:0.05em; padding:7px 12px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); cursor:pointer; }
   .yn-btn.active-yes{ background:var(--yes); color:#fff; border-color:var(--yes); }
   .yn-btn.active-no{ background:var(--no); color:#fff; border-color:var(--no); }
 
   .upload-row{ display:flex; gap:10px; }
   .upload-col{ flex:1; }
-  .upload-box{ border:1px dashed var(--rule); padding:12px 8px; text-align:center; font-family:ui-monospace,monospace; font-size:0.68rem; color:var(--ink-soft); cursor:pointer; margin-top:4px; }
+  .upload-box{ border:1px dashed var(--rule); padding:12px 8px; text-align:center; font-family:var(--mono); font-size:0.68rem; color:var(--ink-soft); cursor:pointer; margin-top:4px; }
   .upload-preview{ width:100%; max-height:140px; object-fit:contain; margin-top:8px; border:1px solid var(--ink); display:block; }
 
   .form-actions{ display:flex; gap:10px; margin-top:18px; }
-  .form-actions button{ flex:1; padding:12px; font-family:ui-monospace,monospace; font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; border:1px solid var(--ink); }
+  .form-actions button{ flex:1; padding:12px; font-family:var(--mono); font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; border:1px solid var(--ink); }
   .save-btn{ background:var(--ink); color:var(--paper); }
   .cancel-btn{ background:var(--paper); color:var(--ink); }
 
   .search-bar{ margin:0 16px 12px; }
-  .search-bar input{ width:100%; padding:10px 12px; border:1px solid var(--ink); background:var(--paper-dark); color:var(--ink); font-family:ui-monospace,monospace; font-size:0.8rem; }
+  .search-bar input{ width:100%; padding:10px 12px; border:1px solid var(--ink); background:var(--paper-dark); color:var(--ink); font-family:var(--mono); font-size:0.8rem; }
   .export-row{ margin:0 16px 8px; }
   .export-panel{ display:none; margin:0 16px 16px; border:1px dashed var(--ink); background:var(--paper-dark); padding:14px; }
   .export-panel.open{ display:block; }
@@ -138,40 +152,31 @@
   .obs-preview-item{ position:relative; width:76px; height:76px; }
   .obs-preview-item img{ width:100%; height:100%; object-fit:cover; border:1px solid var(--ink); display:block; }
   .obs-preview-remove{ position:absolute; top:-7px; right:-7px; width:20px; height:20px; border-radius:50%; background:var(--no); color:#fff; border:none; font-size:0.65rem; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; }
-  .img-observations{ overflow-x:auto; flex-wrap:nowrap; }
-  .img-observations .img-pair-col{ flex:0 0 100px; }
-  .img-observations .ticket-img{ height:100px; }
-  .review-btn{ font-family:ui-monospace,monospace; font-size:0.7rem; padding:6px 10px; border:1px solid var(--ink); background:var(--ink); color:var(--paper); cursor:pointer; letter-spacing:0.04em; }
-  .sort-bar{ display:flex; align-items:center; justify-content:space-between; margin:0 16px 12px; font-family:ui-monospace,monospace; font-size:0.72rem; color:var(--ink-soft); }
+  .review-btn{ font-family:var(--mono); font-size:0.7rem; padding:6px 10px; border:1px solid var(--ink); background:var(--ink); color:var(--paper); cursor:pointer; letter-spacing:0.04em; }
+  .sort-bar{ display:flex; align-items:center; justify-content:space-between; margin:0 16px 12px; font-family:var(--mono); font-size:0.72rem; color:var(--ink-soft); }
 
-  .review-overlay{
-    display:none; position:fixed; inset:0; z-index:60;
-    background:var(--paper);
-    background-image:linear-gradient(var(--paper) 0px, var(--paper) 27px, var(--rule) 28px);
-    background-size:100% 28px;
-    flex-direction:column;
-  }
+  .review-overlay{ display:none; position:fixed; inset:0; z-index:60; background:var(--paper); flex-direction:column; }
   .review-overlay.open{ display:flex; }
   .review-header{ display:flex; justify-content:space-between; align-items:center; padding:16px 18px; border-bottom:2px solid var(--ink); flex-shrink:0; }
-  .review-close{ background:none; border:1px solid var(--ink); color:var(--ink); font-family:ui-monospace,monospace; font-size:0.7rem; padding:6px 10px; cursor:pointer; }
-  .review-card-wrap{ flex:1; overflow-y:auto; padding:16px; touch-action:pan-y; }
+  .review-close{ background:none; border:1px solid var(--ink); color:var(--ink); font-family:var(--mono); font-size:0.7rem; padding:6px 10px; cursor:pointer; }
+  .review-card-wrap{ flex:1; overflow-y:auto; padding:16px; }
   .review-nav{ display:flex; gap:10px; padding:14px 16px; border-top:2px solid var(--ink); flex-shrink:0; background:var(--paper); }
-  .review-nav-btn{ flex:1; padding:14px; background:var(--ink); color:var(--paper); border:none; font-family:ui-monospace,monospace; font-size:0.8rem; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; }
+  .review-nav-btn{ flex:1; padding:14px; background:var(--ink); color:var(--paper); border:none; font-family:var(--mono); font-size:0.8rem; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; }
   .review-nav-btn:disabled{ opacity:0.35; cursor:default; }
   .review-empty{ text-align:center; color:var(--ink-soft); margin-top:60px; font-size:0.9rem; }
-  .sort-bar select{ font-family:ui-monospace,monospace; font-size:0.72rem; padding:6px 8px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); }
+  .sort-bar select{ font-family:var(--mono); font-size:0.72rem; padding:6px 8px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); }
 
   .tickets{ margin:0 16px; display:flex; flex-direction:column; gap:14px; }
   .ticket{ position:relative; border:1px solid var(--ink); background:var(--paper); padding:14px 14px 12px; }
   .ticket-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
   .ticket-symbol{ font-size:1.05rem; font-weight:bold; }
-  .ticket-category{ font-family:ui-monospace,monospace; font-size:0.64rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.05em; }
-  .ticket-date{ font-family:ui-monospace,monospace; font-size:0.68rem; color:var(--ink-soft); }
-  .stamp{ font-family:ui-monospace,monospace; font-size:0.68rem; font-weight:bold; letter-spacing:0.08em; padding:4px 9px; border:2px solid; transform:rotate(-4deg); white-space:nowrap; }
+  .ticket-category{ font-family:var(--mono); font-size:0.64rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.05em; }
+  .ticket-date{ font-family:var(--mono); font-size:0.68rem; color:var(--ink-soft); }
+  .stamp{ font-family:var(--mono); font-size:0.68rem; font-weight:bold; letter-spacing:0.08em; padding:4px 9px; border:2px solid; transform:rotate(-4deg); white-space:nowrap; }
   .stamp.disciplined{ color:var(--yes); border-color:var(--yes); }
   .stamp.impulse{ color:var(--no); border-color:var(--no); }
   .stamp.mixed{ color:var(--amber); border-color:var(--amber); }
-  .result-stamp{ font-family:ui-monospace,monospace; font-size:0.78rem; font-weight:bold; padding:3px 9px; border:1px solid; white-space:nowrap; }
+  .result-stamp{ font-family:var(--mono); font-size:0.78rem; font-weight:bold; padding:3px 9px; border:1px solid; white-space:nowrap; }
   .result-stamp.pos{ color:var(--yes); border-color:var(--yes); background:rgba(47,111,78,0.08); }
   .result-stamp.neg{ color:var(--no); border-color:var(--no); background:rgba(174,62,43,0.08); }
   .ticket-notes{ font-size:0.82rem; color:var(--ink-soft); margin:8px 0; font-style:italic; }
@@ -180,7 +185,7 @@
   .ans span:first-child{ color:var(--ink-soft); }
   .ans .good{ color:var(--yes); font-weight:bold; }
   .ans .bad{ color:var(--no); font-weight:bold; }
-  .ticket-score{ font-family:ui-monospace,monospace; font-size:0.72rem; margin-top:8px; padding-top:8px; border-top:1px dashed var(--rule); display:flex; justify-content:space-between; align-items:center; }
+  .ticket-score{ font-family:var(--mono); font-size:0.72rem; margin-top:8px; padding-top:8px; border-top:1px dashed var(--rule); display:flex; justify-content:space-between; align-items:center; }
 
   .psych-block{ margin-top:10px; padding-top:10px; border-top:1px dashed var(--rule); font-size:0.78rem; }
   .psych-row{ display:flex; justify-content:space-between; margin-bottom:4px; }
@@ -189,301 +194,147 @@
 
   .img-pair{ display:flex; gap:8px; margin-top:10px; }
   .img-pair-col{ flex:1; }
-  .img-pair-label{ font-family:ui-monospace,monospace; font-size:0.62rem; color:var(--ink-soft); text-transform:uppercase; margin-bottom:4px; }
+  .img-pair-label{ font-family:var(--mono); font-size:0.62rem; color:var(--ink-soft); text-transform:uppercase; margin-bottom:4px; }
   .ticket-img{ width:100%; height:120px; object-fit:cover; border:1px solid var(--ink); cursor:pointer; display:block; }
 
-  .ticket-del{ background:none; border:none; color:var(--ink-soft); font-family:ui-monospace,monospace; font-size:0.68rem; text-decoration:underline; cursor:pointer; padding:0; }
-  .ticket-edit{ background:none; border:none; color:var(--ink); font-family:ui-monospace,monospace; font-size:0.68rem; text-decoration:underline; cursor:pointer; padding:0; }
-  .ticket-share{ background:none; border:none; color:var(--amber); font-family:ui-monospace,monospace; font-size:0.68rem; text-decoration:underline; cursor:pointer; padding:0; }
-  .ticket-share:disabled{ opacity:0.5; cursor:default; }
+  .ticket-del, .ticket-edit, .ticket-share{ background:none; border:none; font-family:var(--mono); font-size:0.68rem; text-decoration:underline; cursor:pointer; padding:0; }
+  .ticket-del{ color:var(--ink-soft); } .ticket-edit{ color:var(--ink); } .ticket-share{ color:var(--amber); }
   .empty-state{ margin:40px 16px; text-align:center; color:var(--ink-soft); font-size:0.9rem; }
   .lightbox{ display:none; position:fixed; inset:0; background:rgba(32,41,58,0.92); z-index:70; flex-direction:column; align-items:center; justify-content:center; padding:0; }
   .lightbox.open{ display:flex; }
   .lightbox-header{ position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:16px 18px; z-index:1; }
-  .lightbox-label{ font-family:ui-monospace,monospace; font-size:0.75rem; color:var(--paper); background:rgba(0,0,0,0.35); padding:5px 10px; }
-  .lightbox-close{ background:rgba(0,0,0,0.35); border:1px solid var(--paper); color:var(--paper); font-family:ui-monospace,monospace; font-size:0.75rem; padding:6px 10px; cursor:pointer; }
+  .lightbox-label{ font-family:var(--mono); font-size:0.75rem; color:var(--paper); background:rgba(0,0,0,0.35); padding:5px 10px; }
+  .lightbox-close{ background:rgba(0,0,0,0.35); border:1px solid var(--paper); color:var(--paper); font-family:var(--mono); font-size:0.75rem; padding:6px 10px; cursor:pointer; }
   .lightbox-img-wrap{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:60px 20px; touch-action:pan-y; }
   .lightbox img{ max-width:100%; max-height:100%; border:2px solid var(--paper); }
   .lightbox-dots{ position:absolute; bottom:22px; left:0; right:0; display:flex; justify-content:center; gap:8px; }
   .lightbox-dot{ width:8px; height:8px; border-radius:50%; background:rgba(255,255,255,0.35); }
   .lightbox-dot.active{ background:var(--paper); }
-  .loading{ text-align:center; padding:40px; color:var(--ink-soft); font-family:ui-monospace,monospace; font-size:0.8rem; }
+  .loading{ text-align:center; padding:40px; color:var(--ink-soft); font-family:var(--mono); font-size:0.8rem; }
 
-  /* Main tab switcher */
-  .main-tabs{ display:flex; margin:0 16px 16px; border-bottom:2px solid var(--ink); }
-  .main-tab{
-    flex:1; text-align:center; padding:13px 8px; background:none; border:none;
-    font-family:ui-monospace,monospace; font-size:0.75rem; letter-spacing:0.06em; text-transform:uppercase;
-    color:var(--ink-soft); cursor:pointer; position:relative;
-  }
-  .main-tab.active{ color:var(--ink); font-weight:bold; }
-  .main-tab.active::after{ content:''; position:absolute; left:0; right:0; bottom:-2px; height:3px; background:var(--ink); }
-  .main-tab .tab-icon{ margin-right:5px; }
-
-  /* ===== Zone Flip (scoped) ===== */
-
-  .zoneflip-app{
-    --bg: #FBFBFE;
-    --panel: #FFFFFF;
-    --line: #E6E4F5;
-    --text: #16152B;
-    --muted: #767492;
-    --violet: #5B4CFF;
-    --violet-light: #EFEBFF;
-    --emerald: #0EBE7F;
-    --emerald-light: #E3FBF1;
-    --coral: #FF4E63;
-    --coral-light: #FFE9EC;
-    --amber: #FF9F0A;
-    --amber-light: #FFF3DE;
-    --gold: #FFB800;
-    --display: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  }
-  .zoneflip-app * {box-sizing:border-box; margin:0; padding:0;}
-  .zoneflip-app, .zoneflip-app {height:100%;}
-  .zoneflip-app {
-    background:
-      radial-gradient(ellipse 600px 360px at 10% -10%, rgba(91,76,255,0.09), transparent),
-      radial-gradient(ellipse 600px 360px at 100% 0%, rgba(255,78,99,0.07), transparent),
-      var(--bg);
-    color:var(--text);
-    font-family:var(--sans);
-    line-height:1.45;
-  }
-  .zoneflip-app::selection {background:var(--violet); color:#fff;}
-  .zoneflip-app button {font:inherit;}
-
-  .zoneflip-app .app {
-    max-width:480px;
-    margin:0 auto;
-    min-height:100dvh;
-    display:flex;
-    flex-direction:column;
-    padding:16px 16px 22px;
-  }
-
-  .zoneflip-app .topbar {
-    display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:14px;
-  }
-  .zoneflip-app .brand {
-    font-family:var(--display); font-weight:800; font-size:15px;
-    display:flex; align-items:center; gap:7px;
-  }
-  .zoneflip-app .brand .dot {width:6px; height:6px; border-radius:50%; background:var(--violet); animation:pulse 2s infinite;}
-  .zoneflip-app .brand .tm {color:var(--violet); font-size:11px; vertical-align:top;}
+  /* ZONE FLIP APP STYLES */
+  .zoneflip-app{ max-width:480px; margin:0 auto; padding:0 16px; font-family:var(--sans); }
+  .zf-topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .zf-brand{ font-family:var(--display); font-weight:800; font-size:15px; display:flex; align-items:center; gap:7px; }
+  .zf-brand .dot{ width:6px; height:6px; border-radius:50%; background:var(--violet); animation:pulse 2s infinite; }
+  .zf-brand .tm{ color:var(--violet); font-size:11px; vertical-align:top; }
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(91,76,255,.5);}70%{box-shadow:0 0 0 6px rgba(91,76,255,0);}100%{box-shadow:0 0 0 0 rgba(91,76,255,0);}}
 
-  .zoneflip-app .toggle-row {display:flex; gap:6px;}
-  .zoneflip-app .trail-toggle {
-    font-family:var(--mono); font-size:10.5px; color:var(--muted);
-    background:var(--panel); border:1px solid var(--line); border-radius:99px;
-    padding:6px 11px; cursor:pointer; display:flex; align-items:center; gap:5px;
-  }
-  .zoneflip-app .trail-toggle:hover {border-color:var(--violet); color:var(--violet);}
-  .zoneflip-app .trail-toggle.active {border-color:var(--violet); color:var(--violet); background:var(--violet-light);}
-  .zoneflip-app .trail-toggle .chev {transition:transform .2s ease; font-size:9px;}
-  .zoneflip-app .trail-toggle.open .chev {transform:rotate(180deg);}
+  #zf-trail-strip, #zf-wireframe-strip, #zf-stats-strip{ max-height:0; overflow:hidden; opacity:0; transition:max-height .25s ease, opacity .2s ease, margin .25s ease; }
+  #zf-trail-strip.open{ max-height:60px; opacity:1; margin-bottom:12px; }
+  #zf-wireframe-strip.open{ max-height:180px; opacity:1; margin-bottom:12px; }
+  #zf-stats-strip.open{ max-height:460px; opacity:1; margin-bottom:12px; }
 
-  .zoneflip-app #trail-strip, .zoneflip-app #wireframe-strip, .zoneflip-app #stats-strip {
-    max-height:0; overflow:hidden; opacity:0;
-    transition:max-height .25s ease, opacity .2s ease, margin .25s ease;
-  }
-  .zoneflip-app #trail-strip.open {max-height:60px; opacity:1; margin-bottom:12px;}
-  .zoneflip-app #wireframe-strip.open {max-height:180px; opacity:1; margin-bottom:12px;}
-  .zoneflip-app #stats-strip.open {max-height:460px; opacity:1; margin-bottom:12px;}
+  .zf-trail-pills{ display:flex; gap:6px; flex-wrap:wrap; }
+  .zf-trail-pill{ font-family:var(--mono); font-size:10.5px; padding:5px 10px; border-radius:99px; background:var(--violet-light); color:var(--violet); font-weight:600; }
+  .zf-trail-pill.empty{ background:var(--paper-dark); border:1px dashed var(--rule); color:var(--ink-soft); font-weight:500; }
 
-  .zoneflip-app .trail-pills {display:flex; gap:6px; flex-wrap:wrap;}
-  .zoneflip-app .trail-pill {
-    font-family:var(--mono); font-size:10.5px; padding:5px 10px; border-radius:99px;
-    background:var(--violet-light); color:var(--violet); font-weight:600;
-  }
-  .zoneflip-app .trail-pill.empty {background:var(--panel); border:1px dashed var(--line); color:var(--muted); font-weight:500;}
+  .zf-wireframe-card, .zf-stats-card{ background:var(--paper-dark); border:1px solid var(--ink); border-radius:14px; padding:12px 10px; }
+  .zf-stats-card{ padding:14px; max-height:440px; overflow-y:auto; }
 
-  .zoneflip-app .wireframe-card, .zoneflip-app .stats-card {
-    background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:12px 10px;
-  }
-  .zoneflip-app .stats-card {padding:14px; max-height:440px; overflow-y:auto;}
+  .zf-wireframe{ display:flex; align-items:center; gap:2px; overflow-x:auto; }
+  .zf-wf-col{ display:flex; flex-direction:column; gap:5px; min-width:58px; flex:1; }
+  .zf-wf-col-label{ font-family:var(--mono); font-size:7.5px; color:var(--ink-soft); text-align:center; letter-spacing:.05em; margin-bottom:2px; }
+  .zf-wf-node{ border-radius:7px; padding:5px 3px; text-align:center; font-family:var(--mono); font-size:9px; font-weight:700; border:1.5px dashed var(--rule); color:var(--ink-soft); background:var(--paper); transition:all .2s ease; }
+  .zf-wf-node.chosen{ border-style:solid; color:#fff; }
+  .zf-wf-node.chosen.c-violet{ background:var(--violet); border-color:var(--violet); }
+  .zf-wf-node.chosen.c-emerald{ background:var(--emerald); border-color:var(--emerald); }
+  .zf-wf-node.chosen.c-coral{ background:var(--coral); border-color:var(--coral); }
+  .zf-wf-arrow{ color:var(--rule); font-size:12px; flex-shrink:0; padding:0 1px; }
+  .zf-wf-arrow.active{ color:var(--violet); }
+  .zf-wf-result-node{ border-radius:7px; padding:5px 6px; text-align:center; font-family:var(--mono); font-size:9px; font-weight:700; border:1.5px dashed var(--rule); color:var(--ink-soft); background:var(--paper); }
+  .zf-wf-result-node.ready{ border-style:solid; border-color:var(--gold); background:var(--gold); color:#3a2a00; }
 
-  .zoneflip-app .wireframe {display:flex; align-items:center; gap:2px; overflow-x:auto;}
-  .zoneflip-app .wf-col {display:flex; flex-direction:column; gap:5px; min-width:64px; flex:1;}
-  .zoneflip-app .wf-col-label {font-family:var(--mono); font-size:8px; color:var(--muted); text-align:center; letter-spacing:.05em; margin-bottom:2px;}
-  .zoneflip-app .wf-node {
-    border-radius:7px; padding:5px 3px; text-align:center;
-    font-family:var(--mono); font-size:9.5px; font-weight:700;
-    border:1.5px dashed var(--line); color:var(--muted); background:var(--bg);
-    transition:all .2s ease;
-  }
-  .zoneflip-app .wf-node.chosen {border-style:solid; color:#fff;}
-  .zoneflip-app .wf-node.chosen.c-violet {background:var(--violet); border-color:var(--violet);}
-  .zoneflip-app .wf-node.chosen.c-emerald {background:var(--emerald); border-color:var(--emerald);}
-  .zoneflip-app .wf-node.chosen.c-coral {background:var(--coral); border-color:var(--coral);}
-  .zoneflip-app .wf-node.chosen.c-amber {background:var(--amber); border-color:var(--amber);}
-  .zoneflip-app .wf-node.discarded {opacity:.3; text-decoration:line-through;}
-  .zoneflip-app .wf-arrow {color:var(--line); font-size:13px; flex-shrink:0; padding:0 1px;}
-  .zoneflip-app .wf-arrow.active {color:var(--violet);}
-  .zoneflip-app .wf-result-node {
-    border-radius:7px; padding:5px 6px; text-align:center;
-    font-family:var(--mono); font-size:9.5px; font-weight:700;
-    border:1.5px dashed var(--line); color:var(--muted); background:var(--bg);
-  }
-  .zoneflip-app .wf-result-node.ready {border-style:solid; border-color:var(--gold); background:var(--gold); color:#3a2a00;}
+  .zf-stats-summary{ display:flex; gap:6px; margin-bottom:12px; }
+  .zf-stats-summary-item{ flex:1; background:var(--violet-light); border-radius:10px; padding:8px 4px; text-align:center; }
+  .zf-ss-val{ font-family:var(--display); font-weight:800; font-size:15px; color:var(--violet); line-height:1.1; }
+  .zf-ss-lbl{ font-family:var(--mono); font-size:7.5px; color:var(--ink-soft); letter-spacing:.04em; margin-top:3px; }
+  .zf-stats-rows{ display:flex; flex-direction:column; }
+  .zf-stats-row{ display:flex; align-items:center; gap:9px; padding:7px 0; border-bottom:1px solid var(--rule); }
+  .zf-stats-row:last-child{ border-bottom:none; }
+  .zf-sr-num{ width:22px; height:22px; border-radius:6px; background:var(--violet); color:#fff; font-family:var(--mono); font-weight:700; font-size:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .zf-sr-num.gold{ background:var(--gold); color:#3a2a00; }
+  .zf-sr-info{ flex:1; min-width:0; }
+  .zf-sr-name{ font-size:11px; font-weight:600; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .zf-sr-bar{ height:4px; background:var(--paper); border-radius:99px; overflow:hidden; border:1px solid var(--rule); }
+  .zf-sr-bar-fill{ height:100%; background:var(--emerald); border-radius:99px; transition:width .3s ease; }
+  .zf-sr-stats{ text-align:right; flex-shrink:0; }
+  .zf-sr-wr{ font-family:var(--mono); font-weight:700; font-size:11.5px; color:var(--emerald); }
+  .zf-sr-count{ font-family:var(--mono); font-size:8px; color:var(--ink-soft); margin-top:2px; white-space:nowrap; }
 
-  .zoneflip-app .stats-summary {display:flex; gap:6px; margin-bottom:12px;}
-  .zoneflip-app .stats-summary-item {flex:1; background:var(--violet-light); border-radius:10px; padding:8px 4px; text-align:center;}
-  .zoneflip-app .ss-val {font-family:var(--display); font-weight:800; font-size:15px; color:var(--violet); line-height:1.1;}
-  .zoneflip-app .ss-lbl {font-family:var(--mono); font-size:7.5px; color:var(--muted); letter-spacing:.04em; margin-top:3px;}
-  .zoneflip-app .stats-rows {display:flex; flex-direction:column;}
-  .zoneflip-app .stats-row {display:flex; align-items:center; gap:9px; padding:7px 0; border-bottom:1px solid var(--line);}
-  .zoneflip-app .stats-row:last-child {border-bottom:none;}
-  .zoneflip-app .sr-num {width:22px; height:22px; border-radius:6px; background:var(--violet); color:#fff; font-family:var(--mono); font-weight:700; font-size:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
-  .zoneflip-app .sr-num.gold {background:var(--gold); color:#3a2a00;}
-  .zoneflip-app .sr-info {flex:1; min-width:0;}
-  .zoneflip-app .sr-name {font-size:11px; font-weight:600; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .zoneflip-app .sr-bar {height:4px; background:var(--line); border-radius:99px; overflow:hidden;}
-  .zoneflip-app .sr-bar-fill {height:100%; background:var(--emerald); border-radius:99px; transition:width .3s ease;}
-  .zoneflip-app .sr-stats {text-align:right; flex-shrink:0;}
-  .zoneflip-app .sr-wr {font-family:var(--mono); font-weight:700; font-size:11.5px; color:var(--emerald);}
-  .zoneflip-app .sr-count {font-family:var(--mono); font-size:8px; color:var(--muted); margin-top:2px; white-space:nowrap;}
-  .zoneflip-app .sr-count.muted {color:var(--line); font-size:8.5px;}
-  .zoneflip-app .stats-empty, .zoneflip-app .stats-loading {font-size:11.5px; color:var(--muted); text-align:center; padding:18px 8px; line-height:1.5;}
+  .zf-stats-actions{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px; margin-top:10px; }
+  .zf-clear-log-btn, .zf-export-log-btn, .zf-import-log-btn{ padding:8px 3px; border-radius:10px; font-family:var(--mono); font-size:9px; font-weight:700; cursor:pointer; text-align:center; }
+  .zf-clear-log-btn{ border:1px dashed var(--coral); background:var(--coral-light); color:var(--coral); }
+  .zf-export-log-btn{ border:1px solid var(--violet); background:var(--violet-light); color:var(--violet); }
+  .zf-import-log-btn{ border:1px solid var(--emerald); background:var(--emerald-light); color:var(--emerald); }
 
-  .zoneflip-app .stats-actions {display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px; margin-top:10px;}
-  .zoneflip-app .clear-log-btn, .zoneflip-app .export-log-btn, .zoneflip-app .import-log-btn {
-    padding:8px 3px; border-radius:10px; font-family:var(--mono); font-size:9px; font-weight:700; cursor:pointer; text-align:center;
-  }
-  .zoneflip-app .clear-log-btn {border:1px dashed var(--coral); background:var(--coral-light); color:var(--coral);}
-  .zoneflip-app .export-log-btn {border:1px solid var(--violet); background:var(--violet-light); color:var(--violet);}
-  .zoneflip-app .import-log-btn {border:1px solid var(--emerald); background:var(--emerald-light); color:var(--emerald);}
+  .zf-progress{ display:flex; gap:4px; margin-bottom:16px; }
+  .zf-progress-step{ flex:1; height:5px; border-radius:99px; background:var(--paper-dark); border:1px solid var(--rule); overflow:hidden; position:relative; }
+  .zf-progress-step .fill{ position:absolute; inset:0; background:var(--violet); border-radius:99px; transform:scaleX(0); transform-origin:left; transition:transform .45s cubic-bezier(.65,0,.35,1); }
+  .zf-progress-step.done .fill{ transform:scaleX(1); background:var(--emerald); }
+  .zf-progress-step.active .fill{ transform:scaleX(1); }
 
-  .zoneflip-app .progress {display:flex; gap:6px; margin-bottom:20px;}
-  .zoneflip-app .progress-step {flex:1; height:5px; border-radius:99px; background:var(--line); overflow:hidden; position:relative;}
-  .zoneflip-app .progress-step .fill {position:absolute; inset:0; background:var(--violet); border-radius:99px; transform:scaleX(0); transform-origin:left; transition:transform .45s cubic-bezier(.65,0,.35,1);}
-  .zoneflip-app .progress-step.done .fill {transform:scaleX(1); background:var(--emerald);}
-  .zoneflip-app .progress-step.active .fill {transform:scaleX(1);}
+  .zf-card{ background:var(--paper-dark); border:1px solid var(--ink); border-radius:16px; padding:18px 16px; box-shadow:0 8px 24px -10px rgba(32,41,58,0.12); flex:1; display:flex; flex-direction:column; }
+  .zf-q-title{ font-family:var(--display); font-weight:700; font-size:18px; line-height:1.25; margin-bottom:4px; }
+  .zf-q-desc{ color:var(--ink-soft); font-size:12.5px; margin-bottom:16px; }
 
-  .zoneflip-app .card {
-    background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:22px 20px;
-    box-shadow:0 16px 40px -18px rgba(91,76,255,0.18); flex:1; display:flex; flex-direction:column;
-  }
+  .zf-option-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; flex:1; }
+  .zf-option-btn{ text-align:left; background:var(--paper); border:1.5px solid var(--ink); border-radius:12px; padding:12px 10px; cursor:pointer; transition:all .15s ease; display:flex; flex-direction:column; }
+  .zf-option-btn:active{ transform:scale(.97); }
+  .zf-option-btn.a{ border-color:var(--yes); } .zf-option-btn.b{ border-color:var(--no); }
+  .zf-option-btn.a:hover{ background:var(--emerald-light); } .zf-option-btn.b:hover{ background:var(--coral-light); }
+  .zf-option-btn .otag{ display:inline-block; font-family:var(--mono); font-size:9px; font-weight:700; padding:2px 6px; border-radius:5px; margin-bottom:6px; align-self:flex-start; }
+  .zf-option-btn.a .otag{ background:var(--emerald-light); color:var(--emerald); }
+  .zf-option-btn.b .otag{ background:var(--coral-light); color:var(--coral); }
+  .zf-option-btn .otitle{ font-weight:700; font-size:13px; margin-bottom:4px; }
+  .zf-option-btn .odesc{ font-size:11px; color:var(--ink-soft); line-height:1.35; }
 
-  .zoneflip-app .q-head {display:flex; align-items:center; gap:8px; margin-bottom:10px;}
-  .zoneflip-app .back-btn {
-    width:26px; height:26px; border-radius:8px; border:1px solid var(--line);
-    background:var(--panel); color:var(--muted); cursor:pointer;
-    display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0;
-  }
-  .zoneflip-app .back-btn:disabled {opacity:0; pointer-events:none;}
-  .zoneflip-app .back-btn:hover {border-color:var(--violet); color:var(--violet);}
-  .zoneflip-app .q-tag {font-family:var(--mono); font-size:10.5px; color:var(--muted); letter-spacing:.1em;}
+  .rec-badge-box{ margin-bottom:12px; padding:10px 12px; border-radius:10px; font-family:var(--mono); font-size:11px; font-weight:800; text-align:center; letter-spacing:.04em; }
+  .rec-badge-box.base{ background:var(--emerald-light); color:var(--yes); border:1.5px solid var(--yes); }
+  .rec-badge-box.extreme{ background:var(--coral-light); color:var(--no); border:1.5px solid var(--no); }
 
-  .zoneflip-app .q-title {font-family:var(--display); font-weight:700; font-size:19px; line-height:1.25; margin-bottom:6px;}
-  .zoneflip-app .q-desc {color:var(--muted); font-size:13px; margin-bottom:18px;}
+  .zf-result-num{ font-family:var(--display); font-weight:800; font-size:24px; width:44px; height:44px; border-radius:11px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:var(--violet); color:#fff; }
+  .zf-result-num.gold{ background:var(--gold); color:#3a2a00; }
+  .zf-result-title h2{ font-family:var(--display); font-size:16.5px; font-weight:700; margin-top:2px; }
 
-  .zoneflip-app .option-grid {display:grid; grid-template-columns:1fr 1fr; gap:10px; flex:1;}
-  .zoneflip-app .option-btn {
-    text-align:left; background:var(--panel); border:1.5px solid var(--line); border-radius:14px;
-    padding:14px 12px; cursor:pointer; transition:all .15s ease; display:flex; flex-direction:column; min-height:0;
-  }
-  .zoneflip-app .option-btn:active {transform:scale(.97);}
-  .zoneflip-app .option-btn.a {border-color:rgba(14,190,127,0.25);}
-  .zoneflip-app .option-btn.b {border-color:rgba(255,78,99,0.25);}
-  .zoneflip-app .option-btn.a:hover, .zoneflip-app .option-btn.a:focus-visible {border-color:var(--emerald); background:var(--emerald-light);}
-  .zoneflip-app .option-btn.b:hover, .zoneflip-app .option-btn.b:focus-visible {border-color:var(--coral); background:var(--coral-light);}
-  .zoneflip-app .option-btn .otag {
-    display:inline-block; font-family:var(--mono); font-size:9.5px; font-weight:700;
-    padding:2px 7px; border-radius:6px; margin-bottom:8px; letter-spacing:.04em; align-self:flex-start;
-  }
-  .zoneflip-app .option-btn.a .otag {background:var(--emerald-light); color:var(--emerald);}
-  .zoneflip-app .option-btn.b .otag {background:var(--coral-light); color:var(--coral);}
-  .zoneflip-app .option-btn .otitle {font-weight:700; font-size:13.5px; margin-bottom:5px; line-height:1.25;}
-  .zoneflip-app .option-btn .odesc {font-size:11.3px; color:var(--muted); line-height:1.45;}
+  .zf-result-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
+  .zf-result-block{ border-radius:10px; padding:10px; }
+  .zf-result-block.zone{ background:var(--violet-light); } .zf-result-block.target{ background:var(--emerald-light); }
+  .zf-result-block.sl{ background:var(--coral-light); } .zf-result-block.conf{ background:var(--amber-light); }
+  .zf-result-block .rb-label{ font-family:var(--mono); font-size:8px; letter-spacing:.08em; color:var(--ink-soft); margin-bottom:3px; text-transform:uppercase; }
+  .zf-result-block .rb-value{ font-size:11.5px; font-weight:600; line-height:1.35; }
 
-  .zoneflip-app .candidates-hint {margin-top:14px; font-family:var(--mono); font-size:10.5px; color:var(--muted); text-align:center;}
-  .zoneflip-app .candidates-hint b {color:var(--violet);}
+  .zf-cs-grid{ display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px; }
+  .zf-cs-btn{ padding:8px 6px; border-radius:8px; border:1px solid var(--ink); background:var(--paper); font-family:var(--mono); font-size:9px; font-weight:700; color:var(--ink-soft); cursor:pointer; text-align:center; }
+  .zf-cs-btn.active.tight{ border-color:var(--violet); background:var(--violet-light); color:var(--violet); }
+  .zf-cs-btn.active.wide{ border-color:var(--amber); background:var(--amber-light); color:#8a5b00; }
 
-  .zoneflip-app #result-panel {display:none; flex:1; flex-direction:column;}
-  .zoneflip-app .result-header {display:flex; align-items:center; gap:12px; margin-bottom:12px;}
-  .zoneflip-app .result-num {
-    font-family:var(--display); font-weight:800; font-size:26px; width:48px; height:48px; border-radius:13px; flex-shrink:0;
-    display:flex; align-items:center; justify-content:center; background:var(--violet); color:#fff;
-  }
-  .zoneflip-app .result-num.gold {background:var(--gold); color:#3a2a00;}
-  .zoneflip-app .result-title .rt-tag {font-family:var(--mono); font-size:10px; color:var(--muted); letter-spacing:.08em;}
-  .zoneflip-app .result-title h2 {font-family:var(--display); font-size:17.5px; font-weight:700; margin-top:2px; line-height:1.25;}
-
-  .zoneflip-app .result-narrative {font-size:12.5px; color:var(--muted); line-height:1.5; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid var(--line);}
-
-  .zoneflip-app .result-grid {display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;}
-  .zoneflip-app .result-block {border-radius:12px; padding:10px 11px;}
-  .zoneflip-app .result-block.zone {background:var(--violet-light);}
-  .zoneflip-app .result-block.target {background:var(--emerald-light);}
-  .zoneflip-app .result-block.sl {background:var(--coral-light);}
-  .zoneflip-app .result-block.conf {background:var(--amber-light);}
-  .zoneflip-app .result-block .rb-label {font-family:var(--mono); font-size:8.5px; letter-spacing:.08em; color:var(--muted); margin-bottom:3px; text-transform:uppercase;}
-  .zoneflip-app .result-block.zone .rb-label {color:var(--violet);}
-  .zoneflip-app .result-block.target .rb-label {color:var(--emerald);}
-  .zoneflip-app .result-block.sl .rb-label {color:var(--coral);}
-  .zoneflip-app .result-block.conf .rb-label {color:#8a5b00;}
-  .zoneflip-app .result-block .rb-value {font-size:11.8px; font-weight:600; line-height:1.35;}
-
-  .zoneflip-app .result-risk {
-    background:var(--amber-light); border-radius:12px; padding:9px 11px;
-    display:flex; gap:7px; align-items:flex-start; margin-top:6px; font-size:11.5px; color:#7a5200; line-height:1.4;
-  }
-
-  .zoneflip-app .conf-selector-box {margin-top:12px; padding-top:12px; border-top:1px dashed var(--line);}
-  .zoneflip-app .cs-title {font-family:var(--mono); font-size:9px; color:var(--muted); letter-spacing:.07em; margin-bottom:7px; text-align:center;}
-  .zoneflip-app .cs-grid {display:grid; grid-template-columns:1fr 1fr; gap:6px;}
-  .zoneflip-app .cs-btn {
-    padding:8px 6px; border-radius:10px; border:1.5px solid var(--line); background:var(--panel);
-    font-family:var(--mono); font-size:9.5px; font-weight:700; color:var(--muted); cursor:pointer; text-align:center; transition:all .15s ease;
-  }
-  .zoneflip-app .cs-btn.active.tight {border-color:var(--violet); background:var(--violet-light); color:var(--violet);}
-  .zoneflip-app .cs-btn.active.wide {border-color:var(--amber); background:var(--amber-light); color:#8a5b00;}
-
-  .zoneflip-app .log-section {margin-top:12px; padding-top:12px; border-top:1px dashed var(--line);}
-  .zoneflip-app .log-label {font-family:var(--mono); font-size:9.5px; color:var(--muted); letter-spacing:.07em; margin-bottom:8px; text-align:center;}
-  .zoneflip-app .log-buttons {display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px;}
-  .zoneflip-app .log-btn {
-    padding:10px 3px; border-radius:11px; border:1.5px solid var(--line); background:var(--panel);
-    font-family:var(--mono); font-weight:700; font-size:10.5px; cursor:pointer; text-align:center; transition:all .15s ease;
-  }
-  .zoneflip-app .log-btn:active {transform:scale(.95);}
-  .zoneflip-app .log-btn.win {color:var(--emerald); border-color:rgba(14,190,127,.3);}
-  .zoneflip-app .log-btn.win:hover {background:var(--emerald-light); border-color:var(--emerald);}
-  .zoneflip-app .log-btn.loss {color:var(--coral); border-color:rgba(255,78,99,.3);}
-  .zoneflip-app .log-btn.loss:hover {background:var(--coral-light); border-color:var(--coral);}
-  .zoneflip-app .log-btn.be {color:var(--muted); border-color:var(--line);}
-  .zoneflip-app .log-btn.be:hover {background:var(--bg); border-color:var(--muted);}
-  .zoneflip-app .log-confirm {margin-top:8px; font-size:11px; color:var(--muted); text-align:center; display:flex; align-items:center; justify-content:center; gap:7px; min-height:14px;}
-  .zoneflip-app .undo-btn {font-family:var(--mono); font-size:9.5px; color:var(--violet); background:none; border:none; text-decoration:underline; cursor:pointer;}
-
-  .zoneflip-app .reset-btn {margin-top:auto; padding-top:12px;}
-  .zoneflip-app .reset-btn button {
-    width:100%; padding:12px; border-radius:12px; background:var(--text); color:#fff; border:none; font-weight:600; font-size:13.5px; cursor:pointer;
-  }
-  .zoneflip-app .reset-btn button:hover {opacity:.85;}
-
-  .zoneflip-app .fade-in {animation:fadeIn .3s ease both;}
-  @keyframes fadeIn{from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);}}
-
+  .zf-log-buttons{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; margin-top:8px; }
+  .zf-log-btn{ padding:9px 3px; border-radius:9px; border:1px solid var(--ink); background:var(--paper); font-family:var(--mono); font-weight:700; font-size:10px; cursor:pointer; text-align:center; }
+  .zf-log-btn.win{ color:var(--yes); border-color:var(--yes); } .zf-log-btn.loss{ color:var(--no); border-color:var(--no); }
+  .zf-log-confirm{ margin-top:8px; font-size:11px; color:var(--ink-soft); text-align:center; display:flex; align-items:center; justify-content:center; gap:7px; min-height:14px; }
 </style>
 </head>
 <body>
 
-<!-- ====== FILL THESE IN ====== -->
 <script>
   const SUPABASE_URL = "https://cxkpdwxvsygpdknunsdd.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4a3Bkd3h2c3lncGRrbnVuc2RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NzIxNjksImV4cCI6MjEwMjE0ODE2OX0.BuABs2ZyplpVd2bf8SqAVy1Rr_nl9mMnfsBiZ2YHDK0";
 </script>
-<!-- ============================ -->
 
 <header>
-  <h1>Trade Discipline Ledger</h1>
-  <div class="sub">Execution + Psychology Log</div>
+  <div class="header-top">
+    <div>
+      <h1>Trade Discipline Ledger</h1>
+      <div class="sub">Execution & Strategy Suite</div>
+    </div>
+    <span class="signout" id="signOutBtn" style="display:none;">Sign out</span>
+  </div>
+
+  <div class="main-tabs" id="mainTabs" style="display:none;">
+    <button class="main-tab active" data-tab="journal"><span class="tab-icon">📓</span>Journal</button>
+    <button class="main-tab" data-tab="zoneflip"><span class="tab-icon">⚡</span>Zone Flip</button>
+  </div>
 </header>
 
 <div class="auth-wrap" id="authWrap">
@@ -511,165 +362,159 @@
 </div>
 
 <div class="app" id="app">
-  <div style="margin:0 16px 10px; text-align:right;">
-    <span class="signout" id="signOutBtn">Sign out</span>
-  </div>
 
-  <div class="main-tabs" id="mainTabs">
-    <button class="main-tab active" data-tab="journal"><span class="tab-icon">📓</span>Journal</button>
-    <button class="main-tab" data-tab="zoneflip"><span class="tab-icon">⚡</span>Zone Flip</button>
-  </div>
-
+  <!-- VIEW 1: TRADE JOURNAL -->
   <div id="journalTab">
-  <div class="stats" id="statsBox">
-    <div class="stats-title">Overall — Disciplined vs Undisciplined</div>
-    <div id="statsContent"><div class="stats-empty">Log your first trade to see stats.</div></div>
-    <div class="stats-note">"No" on Psychology (greed/fear) counts as disciplined. Stage bars below show where discipline breaks down most.</div>
-  </div>
-
-  <button class="new-btn" id="newTicketBtn">+ New Trade Ticket</button>
-
-  <div class="ticket-form" id="ticketForm">
-    <h2 id="ticketFormTitle">New Ticket</h2>
-
-    <div class="form-section-title">Trade</div>
-    <div class="field">
-      <label>Category</label>
-      <div class="chip-row" id="categoryChips"></div>
+    <div class="stats" id="statsBox">
+      <div class="stats-title">Overall — Disciplined vs Undisciplined</div>
+      <div id="statsContent"><div class="stats-empty">Log your first trade to see stats.</div></div>
+      <div class="stats-note">"No" on Psychology (greed/fear) counts as disciplined. Stage bars below show where discipline breaks down most.</div>
     </div>
-    <div class="field" id="symbolSelectWrap" style="display:none;">
-      <label>Symbol / Pair</label>
-      <select id="symbolSelect"></select>
-    </div>
-    <div class="field" id="symbolCustomWrap" style="display:none;">
-      <label>Symbol / Pair (custom)</label>
-      <input type="text" id="symbolCustom" placeholder="Type symbol...">
-    </div>
-    <div class="field">
-      <label>Strategy (optional)</label>
-      <div class="chip-row" id="strategyChips"></div>
-      <div class="new-strategy-box" id="newStrategyBox">
-        <input type="text" id="newStrategyName" placeholder="Strategy name (e.g. London Breakout)">
-        <textarea id="newStrategyDesc" placeholder="Short description of the setup / rules (optional)"></textarea>
-        <div class="new-strategy-actions">
-          <button type="button" class="strategy-cancel-btn" id="newStrategyCancel">Cancel</button>
-          <button type="button" class="strategy-add-btn" id="newStrategyAdd">Add Strategy</button>
+
+    <button class="new-btn" id="newTicketBtn">+ New Trade Ticket</button>
+
+    <div class="ticket-form" id="ticketForm">
+      <h2 id="ticketFormTitle">New Ticket</h2>
+
+      <div class="form-section-title">Trade</div>
+      <div class="field">
+        <label>Category</label>
+        <div class="chip-row" id="categoryChips"></div>
+      </div>
+      <div class="field" id="symbolSelectWrap" style="display:none;">
+        <label>Symbol / Pair</label>
+        <select id="symbolSelect"></select>
+      </div>
+      <div class="field" id="symbolCustomWrap" style="display:none;">
+        <label>Symbol / Pair (custom)</label>
+        <input type="text" id="symbolCustom" placeholder="Type symbol...">
+      </div>
+      <div class="field">
+        <label>Strategy (optional)</label>
+        <div class="chip-row" id="strategyChips"></div>
+        <div class="new-strategy-box" id="newStrategyBox">
+          <input type="text" id="newStrategyName" placeholder="Strategy name (e.g. London Breakout)">
+          <textarea id="newStrategyDesc" placeholder="Short description of the setup / rules (optional)"></textarea>
+          <div class="new-strategy-actions">
+            <button type="button" class="strategy-cancel-btn" id="newStrategyCancel">Cancel</button>
+            <button type="button" class="strategy-add-btn" id="newStrategyAdd">Add Strategy</button>
+          </div>
         </div>
       </div>
+      <div class="field"><label>Date</label><input type="date" id="f-date"></div>
+      <div class="field"><label>Notes (optional)</label><textarea id="f-notes" placeholder="Any context on this trade..."></textarea></div>
+      <div class="field">
+        <label>Result (optional)</label>
+        <div class="result-input-row" id="resultStructured">
+          <select id="f-result-outcome">
+            <option value="+">Profit +</option>
+            <option value="-">Loss -</option>
+          </select>
+          <select id="f-result-currency">
+            <option value="$">$ USD</option>
+            <option value="₦">₦ NGN</option>
+            <option value="€">€ EUR</option>
+            <option value="£">£ GBP</option>
+            <option value="¥">¥ JPY</option>
+            <option value="₹">₹ INR</option>
+            <option value="R">R (multiple)</option>
+            <option value="%">% Percent</option>
+            <option value="custom">Custom...</option>
+          </select>
+          <input type="text" id="f-result-amount" placeholder="Amount">
+        </div>
+        <input type="text" id="f-result-custom" placeholder="e.g. +150 pips" style="display:none; margin-top:8px; width:100%; padding:9px 10px; border:1px solid var(--ink); background:var(--paper); font-family:inherit; font-size:0.9rem;">
+      </div>
+
+      <div class="field">
+        <label>Screenshots (optional)</label>
+        <div class="upload-row">
+          <div class="upload-col">
+            <div class="upload-box" id="uploadBoxBefore">Before / Entry</div>
+            <input type="file" id="f-image-before" accept="image/*" style="display:none;">
+            <img id="imgPreviewBefore" class="upload-preview" style="display:none;">
+          </div>
+          <div class="upload-col">
+            <div class="upload-box" id="uploadBoxAfter">After / Exit</div>
+            <input type="file" id="f-image-after" accept="image/*" style="display:none;">
+            <img id="imgPreviewAfter" class="upload-preview" style="display:none;">
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Observations (optional) — add more if you notice something later</label>
+        <div class="upload-box" id="uploadBoxObservation">+ Add Observation Image(s)</div>
+        <input type="file" id="f-image-observation" accept="image/*" multiple style="display:none;">
+        <div class="obs-preview-row" id="obsPreviewRow"></div>
+      </div>
+
+      <div class="form-section-title">Diagnostic Checklist — At Entry</div>
+      <div class="yn-row" data-q="setupOccurred"><div class="yn-question"><span class="stage-tag">SETUP</span>Did my setup actually occur?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+      <div class="yn-row" data-q="enteredPlannedLocation"><div class="yn-question"><span class="stage-tag">ENTRY</span>Did I enter at my planned location?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+      <div class="yn-row" data-q="positionSizeCorrect"><div class="yn-question"><span class="stage-tag">RISK</span>Was position size correct?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+
+      <div class="form-section-title">Diagnostic Checklist — At Exit <span style="text-transform:none; font-style:italic;">(fill in once the trade closes)</span></div>
+      <div class="yn-row" data-q="followedPlanAfterEntry"><div class="yn-question"><span class="stage-tag">MANAGEMENT</span>Did I follow the plan after entry?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+      <div class="yn-row" data-q="obeyedTpSl"><div class="yn-question"><span class="stage-tag">EXIT</span>Did I obey TP/SL rules?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+      <div class="yn-row" data-q="greedFearChangedActions"><div class="yn-question"><span class="stage-tag">PSYCHOLOGY</span>Did greed/fear change my actions?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
+
+      <div class="form-section-title">Psychology</div>
+      <div class="field">
+        <label>How did I feel before entry?</label>
+        <div class="chip-row" id="preEmotionChips"></div>
+      </div>
+      <div class="field">
+        <label>Confidence at entry (1 low – 5 high)</label>
+        <div class="chip-row" id="confidenceChips"></div>
+      </div>
+      <div class="field">
+        <label>How did I feel after the trade?</label>
+        <div class="chip-row" id="postEmotionChips"></div>
+      </div>
+      <div class="field">
+        <label>Reflection (optional)</label>
+        <textarea id="f-reflection" placeholder="What would I do differently? What triggered this trade?"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button class="cancel-btn" id="cancelBtn">Cancel</button>
+        <button class="save-btn" id="saveBtn">Save Ticket</button>
+      </div>
     </div>
-    <div class="field"><label>Date</label><input type="date" id="f-date"></div>
-    <div class="field"><label>Notes (optional)</label><textarea id="f-notes" placeholder="Any context on this trade..."></textarea></div>
-    <div class="field">
-      <label>Result (optional)</label>
-      <div class="result-input-row" id="resultStructured">
-        <select id="f-result-outcome">
-          <option value="+">Profit +</option>
-          <option value="-">Loss -</option>
+
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search symbol, strategy, notes, emotion...">
+    </div>
+
+    <div class="export-row">
+      <button id="exportBtn" class="review-btn">📤 Export CSV</button>
+    </div>
+    <div class="export-panel" id="exportPanel">
+      <div class="field"><label>From</label><input type="date" id="exportFrom"></div>
+      <div class="field"><label>To</label><input type="date" id="exportTo"></div>
+      <button type="button" id="exportConfirm" class="new-btn" style="margin:0;">Download CSV</button>
+    </div>
+
+    <div class="sort-bar">
+      <span id="tradeCount">0 trades</span>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button id="reviewModeBtn" class="review-btn">🔁 Review</button>
+        <select id="sortSelect">
+          <option value="date-desc">Newest first</option>
+          <option value="date-asc">Oldest first</option>
+          <option value="score-desc">Highest discipline %</option>
+          <option value="score-asc">Lowest discipline %</option>
+          <option value="symbol">Symbol A–Z</option>
+          <option value="strategy">By strategy</option>
         </select>
-        <select id="f-result-currency">
-          <option value="$">$ USD</option>
-          <option value="₦">₦ NGN</option>
-          <option value="€">€ EUR</option>
-          <option value="£">£ GBP</option>
-          <option value="¥">¥ JPY</option>
-          <option value="₹">₹ INR</option>
-          <option value="R">R (multiple)</option>
-          <option value="%">% Percent</option>
-          <option value="custom">Custom...</option>
-        </select>
-        <input type="text" id="f-result-amount" placeholder="Amount">
-      </div>
-      <input type="text" id="f-result-custom" placeholder="e.g. +150 pips" style="display:none; margin-top:8px; width:100%; padding:9px 10px; border:1px solid var(--ink); background:var(--paper); font-family:inherit; font-size:0.9rem;">
-    </div>
-
-    <div class="field">
-      <label>Screenshots (optional)</label>
-      <div class="upload-row">
-        <div class="upload-col">
-          <div class="upload-box" id="uploadBoxBefore">Before / Entry</div>
-          <input type="file" id="f-image-before" accept="image/*" style="display:none;">
-          <img id="imgPreviewBefore" class="upload-preview" style="display:none;">
-        </div>
-        <div class="upload-col">
-          <div class="upload-box" id="uploadBoxAfter">After / Exit</div>
-          <input type="file" id="f-image-after" accept="image/*" style="display:none;">
-          <img id="imgPreviewAfter" class="upload-preview" style="display:none;">
-        </div>
       </div>
     </div>
 
-    <div class="field">
-      <label>Observations (optional) — add more if you notice something later</label>
-      <div class="upload-box" id="uploadBoxObservation">+ Add Observation Image(s)</div>
-      <input type="file" id="f-image-observation" accept="image/*" multiple style="display:none;">
-      <div class="obs-preview-row" id="obsPreviewRow"></div>
-    </div>
-
-    <div class="form-section-title">Diagnostic Checklist — At Entry</div>
-    <div class="yn-row" data-q="setupOccurred"><div class="yn-question"><span class="stage-tag">SETUP</span>Did my setup actually occur?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
-    <div class="yn-row" data-q="enteredPlannedLocation"><div class="yn-question"><span class="stage-tag">ENTRY</span>Did I enter at my planned location?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
-    <div class="yn-row" data-q="positionSizeCorrect"><div class="yn-question"><span class="stage-tag">RISK</span>Was position size correct?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
-
-    <div class="form-section-title">Diagnostic Checklist — At Exit <span style="text-transform:none; font-style:italic;">(fill in once the trade closes)</span></div>
-    <div class="yn-row" data-q="followedPlanAfterEntry"><div class="yn-question"><span class="stage-tag">MANAGEMENT</span>Did I follow the plan after entry?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
-    <div class="yn-row" data-q="obeyedTpSl"><div class="yn-question"><span class="stage-tag">EXIT</span>Did I obey TP/SL rules?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
-    <div class="yn-row" data-q="greedFearChangedActions"><div class="yn-question"><span class="stage-tag">PSYCHOLOGY</span>Did greed/fear change my actions?</div><div class="yn-toggle"><button class="yn-btn" data-val="yes">YES</button><button class="yn-btn" data-val="no">NO</button></div></div>
-
-    <div class="form-section-title">Psychology</div>
-    <div class="field">
-      <label>How did I feel before entry?</label>
-      <div class="chip-row" id="preEmotionChips"></div>
-    </div>
-    <div class="field">
-      <label>Confidence at entry (1 low – 5 high)</label>
-      <div class="chip-row" id="confidenceChips"></div>
-    </div>
-    <div class="field">
-      <label>How did I feel after the trade?</label>
-      <div class="chip-row" id="postEmotionChips"></div>
-    </div>
-    <div class="field">
-      <label>Reflection (optional)</label>
-      <textarea id="f-reflection" placeholder="What would I do differently? What triggered this trade?"></textarea>
-    </div>
-
-    <div class="form-actions">
-      <button class="cancel-btn" id="cancelBtn">Cancel</button>
-      <button class="save-btn" id="saveBtn">Save Ticket</button>
-    </div>
+    <div class="tickets" id="ticketsList"><div class="loading">Loading ledger...</div></div>
   </div>
 
-  <div class="search-bar">
-    <input type="text" id="searchInput" placeholder="Search symbol, strategy, notes, emotion...">
-  </div>
-
-  <div class="export-row">
-    <button id="exportBtn" class="review-btn">📤 Export CSV</button>
-  </div>
-  <div class="export-panel" id="exportPanel">
-    <div class="field"><label>From</label><input type="date" id="exportFrom"></div>
-    <div class="field"><label>To</label><input type="date" id="exportTo"></div>
-    <button type="button" id="exportConfirm" class="new-btn" style="margin:0;">Download CSV</button>
-  </div>
-
-  <div class="sort-bar">
-    <span id="tradeCount">0 trades</span>
-    <div style="display:flex; gap:8px; align-items:center;">
-      <button id="reviewModeBtn" class="review-btn">🔁 Review</button>
-      <select id="sortSelect">
-        <option value="date-desc">Newest first</option>
-        <option value="date-asc">Oldest first</option>
-        <option value="score-desc">Highest discipline %</option>
-        <option value="score-asc">Lowest discipline %</option>
-        <option value="symbol">Symbol A–Z</option>
-        <option value="strategy">By strategy</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="tickets" id="ticketsList"><div class="loading">Loading ledger...</div></div>
-  </div>
-
+  <!-- VIEW 2: ZONE FLIP™ FINDER & BACKTESTER (4-STEP WIZARD) -->
   <div id="zoneflipTab" style="display:none;">
     <div class="zoneflip-app">
       <div class="app">
@@ -683,30 +528,31 @@
           </div>
         </div>
 
-        <div id="stats-strip"><div class="stats-card" id="statsBody"></div></div>
-        <div id="wireframe-strip"><div class="wireframe-card"><div class="wireframe" id="wireframeDiagram"></div></div></div>
-        <div id="trail-strip"><div class="trail-pills" id="trailPills"></div></div>
+        <div id="zf-stats-strip"><div class="zf-stats-card" id="zfStatsBody"></div></div>
+        <div id="zf-wireframe-strip"><div class="zf-wireframe-card"><div class="zf-wireframe" id="zfWireframeDiagram"></div></div></div>
+        <div id="zf-trail-strip"><div class="zf-trail-pills" id="zfTrailPills"></div></div>
 
-        <div class="progress">
-          <div class="progress-step" id="pstep-0"><div class="fill"></div></div>
-          <div class="progress-step" id="pstep-1"><div class="fill"></div></div>
-          <div class="progress-step" id="pstep-2"><div class="fill"></div></div>
-          <div class="progress-step" id="pstep-3"><div class="fill"></div></div>
+        <div class="zf-progress">
+          <div class="zf-progress-step" id="zf-pstep-0"><div class="fill"></div></div>
+          <div class="zf-progress-step" id="zf-pstep-1"><div class="fill"></div></div>
+          <div class="zf-progress-step" id="zf-pstep-2"><div class="fill"></div></div>
+          <div class="zf-progress-step" id="zf-pstep-3"><div class="fill"></div></div>
         </div>
 
-        <div class="card">
-          <div id="question-panel"></div>
-          <div id="result-panel"></div>
+        <div class="zf-card">
+          <div id="zf-question-panel"></div>
+          <div id="zf-result-panel"></div>
         </div>
 
-        <!-- Hidden File Input for Importing CSV/JSON -->
-        <input type="file" id="importFileInput" accept=".json,.csv" style="display:none" onchange="ZoneFlip.importData(event)">
+        <input type="file" id="zfImportFileInput" accept=".json,.csv" style="display:none" onchange="ZoneFlip.importData(event)">
 
       </div>
     </div>
   </div>
+
 </div>
 
+<!-- Lightbox & Overlays -->
 <div class="lightbox" id="lightbox">
   <div class="lightbox-header">
     <span id="lightboxLabel" class="lightbox-label"></span>
@@ -733,6 +579,23 @@
 <script>
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// ---- Main Tab Switching ----
+document.querySelectorAll('.main-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    document.getElementById('journalTab').style.display = tab === 'journal' ? 'block' : 'none';
+    document.getElementById('zoneflipTab').style.display = tab === 'zoneflip' ? 'block' : 'none';
+    if(tab === 'zoneflip'){
+      ZoneFlip.renderProgress();
+      ZoneFlip.renderQuestion();
+      ZoneFlip.renderStats();
+    }
+  });
+});
+
+/* ==================== JOURNAL MODULE ==================== */
 const QUESTIONS = [
   { key:'setupOccurred', label:'Setup actually occurred', goodWhen:true, phase:'entry', stage:'Setup' },
   { key:'enteredPlannedLocation', label:'Entered at planned location', goodWhen:true, phase:'entry', stage:'Entry' },
@@ -797,7 +660,7 @@ let currentConfidence = null;
 let currentImageBeforeFile = null, currentImageBeforePreview = null;
 let currentImageAfterFile = null, currentImageAfterPreview = null;
 let existingImageBeforePath = null, existingImageAfterPath = null;
-let observationItems = []; // { id, type:'existing'|'new', path?, file?, url? }
+let observationItems = [];
 let editingTradeId = null;
 let strategies = [];
 let currentStrategyId = null;
@@ -829,12 +692,14 @@ const pwToggle = document.getElementById('pwToggle');
 const eyeIcon = document.getElementById('eyeIcon');
 const EYE_OPEN = '<path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/>';
 const EYE_CLOSED = '<path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a19.7 19.7 0 0 1 4.22-5.06M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 7 11 7a19.7 19.7 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+
 pwToggle.addEventListener('click', () => {
   const isHidden = authPassword.type === 'password';
   authPassword.type = isHidden ? 'text' : 'password';
   eyeIcon.innerHTML = isHidden ? EYE_CLOSED : EYE_OPEN;
   pwToggle.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
 });
+
 const authSubmit = document.getElementById('authSubmit');
 const authMsg = document.getElementById('authMsg');
 const authTitle = document.getElementById('authTitle');
@@ -878,30 +743,25 @@ document.getElementById('signOutBtn').addEventListener('click', async () => {
   await supabaseClient.auth.signOut();
 });
 
-document.querySelectorAll('.main-tab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const tab = btn.dataset.tab;
-    document.getElementById('journalTab').style.display = tab === 'journal' ? 'block' : 'none';
-    document.getElementById('zoneflipTab').style.display = tab === 'zoneflip' ? 'block' : 'none';
-  });
-});
-
 supabaseClient.auth.onAuthStateChange((event, session) => {
   currentUser = session ? session.user : null;
   if(currentUser){
     authWrap.style.display = 'none';
     app.style.display = 'block';
+    document.getElementById('signOutBtn').style.display = 'inline-block';
+    document.getElementById('mainTabs').style.display = 'flex';
     loadStrategies();
     loadTrades();
+    ZoneFlip.loadTrades();
   } else {
     authWrap.style.display = 'block';
     app.style.display = 'none';
+    document.getElementById('signOutBtn').style.display = 'none';
+    document.getElementById('mainTabs').style.display = 'none';
   }
 });
 
-// ---- Ticket form ----
+// Ticket form logic
 const ticketForm = document.getElementById('ticketForm');
 const newTicketBtn = document.getElementById('newTicketBtn');
 const cancelBtn = document.getElementById('cancelBtn');
@@ -990,7 +850,7 @@ function getSelectedSymbol(){
   return symbolSelect.value || '';
 }
 
-// ---- Strategies ----
+// Strategies
 const strategyChipsEl = document.getElementById('strategyChips');
 const newStrategyBox = document.getElementById('newStrategyBox');
 const newStrategyName = document.getElementById('newStrategyName');
@@ -1062,7 +922,6 @@ newStrategyAdd.addEventListener('click', async () => {
   }
 });
 
-
 function resetForm(){
   editingTradeId = null;
   document.getElementById('ticketFormTitle').textContent = 'New Ticket';
@@ -1102,22 +961,10 @@ function resetForm(){
   renderConfidenceChips();
 }
 
-function renderPreEmotionChips(){
-  renderMultiChipGroup(preEmotionChipsEl, PRE_EMOTIONS, currentPreEmotions, togglePre);
-}
-function renderPostEmotionChips(){
-  renderMultiChipGroup(postEmotionChipsEl, POST_EMOTIONS, currentPostEmotions, togglePost);
-}
-function togglePre(val){
-  const i = currentPreEmotions.indexOf(val);
-  if(i > -1) currentPreEmotions.splice(i,1); else currentPreEmotions.push(val);
-  renderPreEmotionChips();
-}
-function togglePost(val){
-  const i = currentPostEmotions.indexOf(val);
-  if(i > -1) currentPostEmotions.splice(i,1); else currentPostEmotions.push(val);
-  renderPostEmotionChips();
-}
+function renderPreEmotionChips(){ renderMultiChipGroup(preEmotionChipsEl, PRE_EMOTIONS, currentPreEmotions, togglePre); }
+function renderPostEmotionChips(){ renderMultiChipGroup(postEmotionChipsEl, POST_EMOTIONS, currentPostEmotions, togglePost); }
+function togglePre(val){ const i = currentPreEmotions.indexOf(val); if(i > -1) currentPreEmotions.splice(i,1); else currentPreEmotions.push(val); renderPreEmotionChips(); }
+function togglePost(val){ const i = currentPostEmotions.indexOf(val); if(i > -1) currentPostEmotions.splice(i,1); else currentPostEmotions.push(val); renderPostEmotionChips(); }
 function renderMultiChipGroup(container, options, selectedArr, toggleFn){
   container.innerHTML = options.map(opt => {
     const isActive = selectedArr.includes(opt);
@@ -1355,7 +1202,7 @@ saveBtn.addEventListener('click', async () => {
   if(!currentCategory){ alert('Pick a category.'); return; }
   if(!symbol){ alert('Pick or type a symbol.'); return; }
   const missingEntry = ENTRY_QUESTIONS.some(q => currentAnswers[q.key] === undefined);
-  if(missingEntry){ alert('Please answer the "At Entry" checklist questions. The "At Exit" question can be left for later if the trade is still open.'); return; }
+  if(missingEntry){ alert('Please answer the "At Entry" checklist questions.'); return; }
 
   const isEdit = !!editingTradeId;
   saveBtn.disabled = true;
@@ -1379,7 +1226,6 @@ saveBtn.addEventListener('click', async () => {
       image_path_after = fn;
     }
 
-    // Observations: delete removed ones, upload new ones
     const originalTrade = isEdit ? trades.find(t => t.id === editingTradeId) : null;
     const originalObsPaths = (originalTrade && originalTrade.observation_paths) ? originalTrade.observation_paths : [];
     const keptExistingPaths = observationItems.filter(it => it.type === 'existing').map(it => it.path);
@@ -1497,7 +1343,6 @@ function renderStats(){
     </div>`;
 }
 
-
 function stampFor(pct){
   if(pct >= 80) return { cls:'disciplined', text:'DISCIPLINED' };
   if(pct <= 40) return { cls:'impulse', text:'IMPULSE' };
@@ -1611,7 +1456,7 @@ function wireTicketCardHandlers(containerEl, fromReview){
         await generateShareCard(trade);
       } catch(err){
         console.error(err);
-        alert('Could not generate the share image. This can happen if the screenshots can\'t be loaded securely for sharing — try again, or save your screenshots manually.');
+        alert('Could not generate the share image.');
       } finally {
         btn.disabled = false;
         btn.textContent = original;
@@ -1648,14 +1493,12 @@ async function generateShareCard(trade){
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  // Background (ledger paper look)
   ctx.fillStyle = '#EDEAE0';
   ctx.fillRect(0, 0, W, H);
   ctx.strokeStyle = 'rgba(198,191,169,0.6)';
   ctx.lineWidth = 1;
   for(let y = 60; y < H; y += 42){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
 
-  // Header
   ctx.fillStyle = '#20293A';
   ctx.font = 'bold 58px Georgia, serif';
   ctx.textAlign = 'left';
@@ -1673,7 +1516,6 @@ async function generateShareCard(trade){
 
   let cursorY = strategy ? 210 : 175;
 
-  // Before/After images side by side
   const imgs = [];
   if(trade._imgBefore) imgs.push({ url: trade._imgBefore, label: 'BEFORE' });
   if(trade._imgAfter) imgs.push({ url: trade._imgAfter, label: 'AFTER' });
@@ -1700,7 +1542,6 @@ async function generateShareCard(trade){
     cursorY += 40;
   }
 
-  // Discipline stamp (rotated, like the in-app card)
   const s = scoreOf(trade);
   const isOpen = EXIT_QUESTIONS.some(q => trade.answers[q.key] === undefined);
   const stamp = isOpen ? { text:'OPEN', color:'#B4801F' } : (() => {
@@ -1721,7 +1562,6 @@ async function generateShareCard(trade){
   ctx.restore();
   cursorY += 130;
 
-  // Result / P&L stamp beneath
   if(trade.result_amount){
     const isNeg = trade.result_amount.trim().startsWith('-');
     ctx.font = 'bold 62px Menlo, monospace';
@@ -1731,7 +1571,6 @@ async function generateShareCard(trade){
     cursorY += 90;
   }
 
-  // Footer branding
   ctx.font = '22px Menlo, monospace';
   ctx.fillStyle = '#5B6472';
   ctx.textAlign = 'center';
@@ -1889,7 +1728,6 @@ reviewClose.addEventListener('click', () => reviewOverlay.classList.remove('open
 reviewPrev.addEventListener('click', () => { if(reviewIndex > 0){ reviewIndex--; renderReviewCard(); } });
 reviewNext.addEventListener('click', () => { if(reviewIndex < currentVisibleList.length - 1){ reviewIndex++; renderReviewCard(); } });
 
-// Swipe support
 let touchStartX = null;
 reviewCardWrap.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
 reviewCardWrap.addEventListener('touchend', (e) => {
@@ -1901,7 +1739,6 @@ reviewCardWrap.addEventListener('touchend', (e) => {
   }
   touchStartX = null;
 });
-
 
 async function loadTrades(){
   ticketsList.innerHTML = '<div class="loading">Loading ledger...</div>';
@@ -1920,22 +1757,7 @@ async function loadTrades(){
   renderTickets();
 }
 
-// ---- Export ----
-const exportBtn = document.getElementById('exportBtn');
-const exportPanel = document.getElementById('exportPanel');
-const exportFrom = document.getElementById('exportFrom');
-const exportTo = document.getElementById('exportTo');
-const exportConfirm = document.getElementById('exportConfirm');
-
-exportBtn.addEventListener('click', () => {
-  exportPanel.classList.toggle('open');
-  if(exportPanel.classList.contains('open') && trades.length){
-    const dates = trades.map(t => t.trade_date).sort();
-    if(!exportFrom.value) exportFrom.value = dates[0];
-    if(!exportTo.value) exportTo.value = dates[dates.length - 1];
-  }
-});
-
+// Export CSV for Trade Journal
 function csvEscape(val){
   if(val === null || val === undefined) return '';
   const str = String(val);
@@ -1974,6 +1796,21 @@ function exportToCsv(list, from, to){
   URL.revokeObjectURL(url);
 }
 
+const exportBtn = document.getElementById('exportBtn');
+const exportPanel = document.getElementById('exportPanel');
+const exportFrom = document.getElementById('exportFrom');
+const exportTo = document.getElementById('exportTo');
+const exportConfirm = document.getElementById('exportConfirm');
+
+exportBtn.addEventListener('click', () => {
+  exportPanel.classList.toggle('open');
+  if(exportPanel.classList.contains('open') && trades.length){
+    const dates = trades.map(t => t.trade_date).sort();
+    if(!exportFrom.value) exportFrom.value = dates[0];
+    if(!exportTo.value) exportTo.value = dates[dates.length - 1];
+  }
+});
+
 exportConfirm.addEventListener('click', () => {
   const from = exportFrom.value;
   const to = exportTo.value;
@@ -1983,11 +1820,82 @@ exportConfirm.addEventListener('click', () => {
   exportToCsv(filtered, from, to);
   exportPanel.classList.remove('open');
 });
-</script>
 
-<script>
-(function(){
+
+/* ==================== ZONE FLIP™ MODULE ==================== */
+
+const ZoneFlip = (function(){
   'use strict';
+
+  const scenarios = {
+    // --- P1: Point 5 Failed / Equal ($5 <= 3) ---
+    "C1-S1-M1-P1": { n:1, gold:false, glyph:"⚡", cls:"Class I Scalp (Pt 5 Failed)",
+      narrative:"Channel geometry is balanced, but Space 1 & 4 is open. Point 5 failed ($5 <= 3) — energy is contained at C for an immediate scalp.",
+      zone:"🟢 BASE (Point C Zone)", target:"Short-term scalp to Target 1 / Midpoint B.", sl:"Beyond C ± (0.5 + ATR)",
+      conf:"Tight Δ: Overrides gap. Wide Δ: Trade A-C Corridor.", risk:"Expect a secondary sweep to fill the gap later." },
+    "C1-S2-M1-P1": { n:2, gold:true, glyph:"🏆", cls:"Pure Class I — Holy Grail",
+      narrative:"Perfect structural balance. Space 1 & 4 is mitigated (zero voids) and Pt 5 failed/equal. Order flow is 100% cleared for expansion.",
+      zone:"🟢 BASE (Point C Zone) — High Conviction", target:"Hold runners for Target 1 AND Target 2.", sl:"Below local swing / Pt C buffer",
+      conf:"Tight Δ: High-density order wall. Zero-Overlap: B Tail ↔ A High.", risk:null },
+    "C2-S1-M1-P1": { n:3, gold:false, glyph:"⚡", cls:"Gap-Sweep Setup (Pt 5 Failed)",
+      narrative:"Price broke Point C to drive into the open gap. Pt 5 failed, exhausting momentum at the gap fill level.",
+      zone:"🔴 EXTREME (C Extreme / Point 1)", target:"Target 1 / Void Rebalance Target.", sl:"Tier 3: Pt 1 / Intercept A + 1.5x ATR",
+      conf:"Tight Δ: Target 1 & Intercept A sweep together.", risk:"Verify low Volume + high StdDev before entering." },
+    "C2-S2-M1-P1": { n:4, gold:false, glyph:"💥", cls:"Class II Breakdown (Pt 5 Failed)",
+      narrative:"Space 1 & 4 was already mitigated. C breach is a true trend breakdown. Pt 5 failure offers clean re-entry.",
+      zone:"🔴 EXTREME (Midpoint B Boundary)", target:"Lower/upper Target 2 bounds via continuation.", sl:"Beyond Midpoint B boundary",
+      conf:"Zero-Overlap Pair Active: B Tail ↔ A High", risk:"High Volume + High StdDev confirms true breakdown." },
+    "C1-S1-M2-P1": { n:5, gold:false, glyph:"⚠️", cls:"Class III Fakeout (Pt 5 Failed)",
+      narrative:"Point 1 failed to cross Midpoint B and Space 1 & 4 is open. Pt C is a fakeout trap even though Pt 5 failed.",
+      zone:"🔴 EXTREME (C Extreme / Point 1)", target:"Void Fill Rebalance Target (Plunge into open Space 1 & 4).", sl:"Tier 3: Intercept A + 1.5x ATR",
+      conf:"Pt 5 Failed ──► Trade Extreme Floor", risk:"DO NOT BUY/SELL POINT C! Trade C Extreme." },
+    "C1-S2-M2-P1": { n:6, gold:false, glyph:"⚠️", cls:"Class III Compression (Pt 5 Failed)",
+      narrative:"No midpoint cross creates range compression. Point C is unstable despite being mitigated.",
+      zone:"🔴 EXTREME (C Extreme / Boundary)", target:"Bypass Point C — orders at the extreme boundary.", sl:"Beyond Channel Extreme",
+      conf:"Zero-Overlap Flip: B Tail ↔ A High", risk:"Compression can resolve violently either way." },
+    "C2-S1-M2-P1": { n:7, gold:false, glyph:"🌪️", cls:"Class III Gap Slide (Pt 5 Failed)",
+      narrative:"Maximum structural weakness — price slides through C into the unmitigated void without resistance.",
+      zone:"🔴 EXTREME (Point 1 / Intercept A)", target:"Execute the reversal trade strictly here.", sl:"Tier 3: Intercept A + 1.5x ATR",
+      conf:"Tight Δ: Target 1 & Intercept A fail together ──► Skip to Target 2.", risk:"No support until the final floor — expect a fast slide." },
+    "C2-S2-M2-P1": { n:8, gold:false, glyph:"🌊", cls:"Class III Over-Expansion",
+      narrative:"Complete trend expansion beyond normal channel limits.",
+      zone:"🔴 EXTREME (Target 2 Extreme + 1.5x ATR)", target:"Execute reversal trade at this extended boundary.", sl:"Beyond Target 2 Extreme + ATR",
+      conf:"Zero-Overlap Boundary: A High ↔ B Tail", risk:null },
+
+    // --- P2: Point 5 Swept Past Point 3 ($5 > 3) ---
+    "C1-S1-M1-P2": { n:9, gold:false, glyph:"⚡", cls:"Class I Trap Flip (Pt 5 Swept)",
+      narrative:"Space 1 & 4 is open and Point 5 swept Point 3 upward/downward! Perspective CHANGES to Extreme despite C holding initially.",
+      zone:"🔴 EXTREME (Upper Ex if Pt 5 Swept Up / Lower Ex if Swept Down)", target:"Void Fill Rebalance Target (Plunge into open Space 1 & 4).", sl:"Tier 3: Intercept A + 1.5x ATR",
+      conf:"Pt 5 Swept Up ──► SELL Upper Ex | Pt 5 Swept Down ──► BUY Lower Ex", risk:"Point C is a trap! Trade the Extreme in the direction of the Pt 5 sweep." },
+    "C1-S2-M1-P2": { n:10, gold:true, glyph:"🏆", cls:"Pure Class I Expansion (Pt 5 Swept)",
+      narrative:"Space 1 & 4 is mitigated and Point 5 swept Point 3. High-conviction trend expansion.",
+      zone:"🟢 BASE (Point C Zone) — High Conviction", target:"Hold runners for Target 1 AND Target 2.", sl:"Below local swing / Pt C buffer",
+      conf:"Tight Δ: High-density order wall.", risk:null },
+    "C2-S1-M1-P2": { n:11, gold:false, glyph:"⚡", cls:"Climax Gap-Sweep (Pt 5 Swept)",
+      narrative:"Price broke C and Pt 5 swept Pt 3. High-volatility liquidity sweep into the open gap.",
+      zone:"🔴 EXTREME (Upper Ex if Pt 5 Swept Up / Lower Ex if Swept Down)", target:"Target 1 / Void Rebalance Target.", sl:"Tier 3: Pt 1 / Intercept A + 1.5x ATR",
+      conf:"Pt 5 Swept Up ──► SELL Upper Ex | Pt 5 Swept Down ──► BUY Lower Ex", risk:"Verify low Volume + high StdDev before entering." },
+    "C2-S2-M1-P2": { n:12, gold:false, glyph:"💥", cls:"Class II Trend Expansion (Pt 5 Swept)",
+      narrative:"Space 1 & 4 was mitigated and Pt 5 swept Pt 3. True institutional trend breakdown/expansion.",
+      zone:"🔴 EXTREME (Target 2 Extreme Bounds)", target:"Lower/upper Target 2 bounds via continuation.", sl:"Beyond Target 2 Extreme boundary",
+      conf:"Wide Δ: Trade outer C-Extreme bounds.", risk:"High Volume + High StdDev confirms true breakdown." },
+    "C1-S1-M2-P2": { n:13, gold:false, glyph:"⚠️", cls:"Class III Trap (Pt 5 Swept)",
+      narrative:"Point 1 failed to cross Midpoint B and Space 1 & 4 is open. Pt 5 sweep activates the Extreme Trap.",
+      zone:"🔴 EXTREME (Upper Ex if Pt 5 Swept Up / Lower Ex if Swept Down)", target:"Void Fill Rebalance Target.", sl:"Tier 3: Intercept A + 1.5x ATR",
+      conf:"Pt 5 Swept Up ──► SELL Upper Ex | Pt 5 Swept Down ──► BUY Lower Ex", risk:"DO NOT BUY/SELL POINT C! Trade the Extreme." },
+    "C1-S2-M2-P2": { n:14, gold:false, glyph:"⚠️", cls:"Class III Sweep (Pt 5 Swept)",
+      narrative:"No midpoint cross creates range compression. Pt 5 sweep forces over-expansion.",
+      zone:"🔴 EXTREME (C Extreme Boundary)", target:"Orders at the extreme boundary.", sl:"Beyond Channel Extreme",
+      conf:"Wide Δ: Trade A-C Corridor limits.", risk:"Compression can resolve violently." },
+    "C2-S1-M2-P2": { n:15, gold:false, glyph:"🌪️", cls:"Class III Climax Slide (Pt 5 Swept)",
+      narrative:"Maximum structural weakness — Pt 5 sweep accelerates slide through C into the unmitigated void.",
+      zone:"🔴 EXTREME (Point 1 / Intercept A Floor)", target:"Execute reversal trade strictly at Pt 1 Floor.", sl:"Tier 3: Intercept A + 1.5x ATR",
+      conf:"Tight Δ: Target 1 & Intercept A fail together ──► Skip to Target 2.", risk:"No support until the final floor — expect a fast slide." },
+    "C2-S2-M2-P2": { n:16, gold:false, glyph:"🌊", cls:"Class III Climax Expansion (Pt 5 Swept)",
+      narrative:"Complete trend expansion beyond normal channel limits driven by Pt 5 sweep.",
+      zone:"🔴 EXTREME (Target 2 Extreme + 1.5x ATR)", target:"Execute reversal trade at this extended boundary.", sl:"Beyond Target 2 Extreme + ATR",
+      conf:"Wide Δ: Target 2 Extreme is active floor.", risk:null }
+  };
 
   const questions = [
     { key:"C", tag:"STEP 1 / 4", title:"Is Point C holding or breached?",
@@ -1995,4 +1903,476 @@ exportConfirm.addEventListener('click', () => {
       a:{ value:"C1", tag:"C1 · HOLDS", title:"Holds", desc:"C ± 0.5 respected — no violation." },
       b:{ value:"C2", tag:"C2 · BREACH", title:"Breached", desc:"Price violated the C ± 0.5 zone." } },
     { key:"S", tag:"STEP 2 / 4", title:"Is Space 1 & 4 open or filled?",
-      desc:"Has the structural liquidity void been mitiga
+      desc:"Has the structural liquidity void been mitigated?",
+      a:{ value:"S1", tag:"S1 · OPEN", title:"Open", desc:"Pt 4 did NOT touch Pt 1 (Unmitigated Void)." },
+      b:{ value:"S2", tag:"S2 · FILLED", title:"Filled", desc:"Pt 4 touched/overlapped Pt 1 (Mitigated)." } },
+    { key:"M", tag:"STEP 3 / 4", title:"Did Point 1 cross Midpoint B?",
+      desc:"Check the geometry vs. the channel midpoint.",
+      a:{ value:"M1", tag:"M1 · CROSS", title:"Crossed", desc:"Balanced geometry." },
+      b:{ value:"M2", tag:"M2 · NO-CROSS", title:"No Cross", desc:"Class III imbalance." } },
+    { key:"P", tag:"STEP 4 / 4", title:"What is Point 5's behavior?",
+      desc:"Check if Point 5 swept past Point 3 or failed to reach it.",
+      a:{ value:"P1", tag:"P1 · FAILED / EQUAL", title:"Failed / Equal", desc:"Pt 5 failed to reach Pt 3 (or equal). Energy contained." },
+      b:{ value:"P2", tag:"P2 · SWEPT PAST", title:"Swept Past", desc:"Pt 5 swept past Pt 3. Liquidity trap active." } }
+  ];
+
+  let answers = [];
+  let openPanel = null;
+  let lastLoggedId = null;
+  let selectedConfluence = 'tight';
+  let zfTrades = [];
+
+  function setPanel(name){
+    openPanel = (openPanel === name) ? null : name;
+    
+    document.getElementById('zf-trail-strip').classList.toggle('open', openPanel === 'trail');
+    document.getElementById('zf-wireframe-strip').classList.toggle('open', openPanel === 'wireframe');
+    document.getElementById('zf-stats-strip').classList.toggle('open', openPanel === 'stats');
+
+    const lbl = document.getElementById('trailToggleLabel');
+    if(lbl) lbl.textContent = openPanel === 'trail' ? 'HIDE' : 'STEPS';
+
+    if(openPanel === 'trail') renderTrailPills();
+    if(openPanel === 'wireframe') renderWireframe();
+    if(openPanel === 'stats') renderStats();
+  }
+
+  function renderTrailPills(){
+    const el = document.getElementById('trailPills');
+    if(!el) return;
+    if(answers.length === 0){
+      el.innerHTML = '<span class="zf-trail-pill empty">No answers yet</span>';
+    } else {
+      el.innerHTML = answers.map(a => `<span class="zf-trail-pill">${a}</span>`).join('');
+    }
+  }
+
+  const wfColors = ['c-violet','c-emerald','c-coral','c-violet'];
+
+  function renderWireframe(){
+    if(openPanel !== 'wireframe') return;
+    const el = document.getElementById('wireframeDiagram');
+    if(!el) return;
+    let html = '';
+    questions.forEach((q, i) => {
+      const answered = i < answers.length;
+      const current = i === answers.length;
+      const chosenVal = answered ? answers[i] : null;
+      const color = wfColors[i];
+      const colLabel = q.key === 'C' ? 'PT C' : q.key === 'S' ? 'SPACE' : q.key === 'M' ? 'MID B' : 'PT 5';
+      html += `<div class="zf-wf-col">
+        <div class="zf-wf-col-label">${colLabel}</div>
+        <div class="zf-wf-node ${chosenVal === q.a.value ? 'chosen '+color : (answered ? 'discarded' : '')}">${q.a.value}</div>
+        <div class="zf-wf-node ${chosenVal === q.b.value ? 'chosen '+color : (answered ? 'discarded' : '')}">${q.b.value}</div>
+      </div>`;
+      html += `<div class="zf-wf-arrow ${answered || current ? 'active' : ''}">›</div>`;
+    });
+    const done = answers.length === 4;
+    const resultLabel = done ? '#' + scenarios[answers.join('-')].n : '?';
+    html += `<div class="zf-wf-col">
+      <div class="zf-wf-col-label">RESULT</div>
+      <div class="zf-wf-result-node ${done ? 'ready' : ''}">${resultLabel}</div>
+    </div>`;
+    el.innerHTML = html;
+  }
+
+  function renderProgress(){
+    for(let i=0;i<4;i++){
+      const step = document.getElementById('pstep-'+i);
+      if(!step) continue;
+      step.classList.remove('active','done');
+      if(i < answers.length) step.classList.add('done');
+      else if(i === answers.length) step.classList.add('active');
+    }
+  }
+
+  function candidateCount(){
+    if(answers.length === 0) return 16;
+    return Object.keys(scenarios).filter(k => {
+      const parts = k.split('-');
+      return answers.every((a,i) => parts[i] === a);
+    }).length;
+  }
+
+  function renderQuestion(){
+    const resPanel = document.getElementById('zf-result-panel');
+    const qPanel = document.getElementById('zf-question-panel');
+    if(resPanel) resPanel.style.display = 'none';
+    if(!qPanel) return;
+    qPanel.style.display = 'flex';
+    qPanel.style.flexDirection = 'column';
+    qPanel.style.flex = '1';
+    
+    const q = questions[answers.length];
+    qPanel.innerHTML = `
+      <div class="fade-in" style="display:flex; flex-direction:column; flex:1;">
+        <div class="q-head">
+          <button class="back-btn" onclick="ZoneFlip.goBack()" ${answers.length===0 ? 'disabled':''}>&larr;</button>
+          <span class="q-tag">${q.tag}</span>
+        </div>
+        <div class="zf-q-title">${q.title}</div>
+        <div class="zf-q-desc">${q.desc}</div>
+        <div class="zf-option-grid">
+          <button class="zf-option-btn a" onclick="ZoneFlip.selectAnswer('${q.key}','${q.a.value}')">
+            <span class="otag">${q.a.tag}</span>
+            <div class="otitle">${q.a.title}</div>
+            <div class="odesc">${q.a.desc}</div>
+          </button>
+          <button class="zf-option-btn b" onclick="ZoneFlip.selectAnswer('${q.key}','${q.b.value}')">
+            <span class="otag">${q.b.tag}</span>
+            <div class="otitle">${q.b.title}</div>
+            <div class="odesc">${q.b.desc}</div>
+          </button>
+        </div>
+        <div class="candidates-hint"><b>${candidateCount()}</b> of 16 scenarios still match</div>
+      </div>
+    `;
+  }
+
+  function selectAnswer(key, value){
+    answers.push(value);
+    renderProgress();
+    if(openPanel === 'trail') renderTrailPills();
+    if(openPanel === 'wireframe') renderWireframe();
+    if(answers.length === 4) renderResult();
+    else renderQuestion();
+  }
+
+  function goBack(){
+    answers.pop();
+    renderProgress();
+    if(openPanel === 'trail') renderTrailPills();
+    if(openPanel === 'wireframe') renderWireframe();
+    renderQuestion();
+  }
+
+  function setConfluence(type){
+    selectedConfluence = type;
+    const btnT = document.getElementById('zfConfBtnTight');
+    const btnW = document.getElementById('zfConfBtnWide');
+    if(btnT) btnT.classList.toggle('active', type === 'tight');
+    if(btnW) btnW.classList.toggle('active', type === 'wide');
+  }
+
+  function renderResult(){
+    const qPanel = document.getElementById('zf-question-panel');
+    const resPanel = document.getElementById('zf-result-panel');
+    if(qPanel) qPanel.style.display = 'none';
+    if(!resPanel) return;
+
+    lastLoggedId = null;
+    selectedConfluence = 'tight';
+    const key = answers.join('-');
+    const s = scenarios[key];
+    const isBase = s.zone.includes("🟢 BASE") || s.zone.includes("POINT C ZONE");
+    const recBadgeClass = isBase ? "base" : "extreme";
+    const recBadgeText = isBase ? "🟢 RECOMMENDED ZONE: BASE (POINT C ZONE)" : "🔴 RECOMMENDED ZONE: C EXTREME / BOUNDARY";
+
+    resPanel.style.display = 'flex';
+    resPanel.innerHTML = `
+      <div class="fade-in" style="display:flex; flex-direction:column; flex:1;">
+        <div class="q-head">
+          <button class="back-btn" onclick="ZoneFlip.goBack()">&larr;</button>
+          <span class="q-tag">RESULT</span>
+        </div>
+        <div class="result-header">
+          <div class="zf-result-num ${s.gold ? 'gold':''}">${s.n}</div>
+          <div class="result-title">
+            <div class="rt-tag">SCENARIO ${s.n} · ${answers.join(' + ')}</div>
+            <h2>${s.glyph} ${s.cls}</h2>
+          </div>
+        </div>
+        
+        <div class="rec-badge-box ${recBadgeClass}">${recBadgeText}</div>
+
+        <div class="result-narrative">${s.narrative}</div>
+        <div class="zf-result-grid">
+          <div class="zf-result-block zone"><div class="rb-label">Active Entry Zone</div><div class="rb-value">${s.zone}</div></div>
+          <div class="zf-result-block target"><div class="rb-label">Target</div><div class="rb-value">${s.target}</div></div>
+          <div class="zf-result-block sl"><div class="rb-label">Stop Loss</div><div class="rb-value">${s.sl}</div></div>
+          <div class="zf-result-block conf"><div class="rb-label">Pt 5 & Confluence Note</div><div class="rb-value">${s.conf}</div></div>
+        </div>
+        ${s.risk ? `<div class="result-risk"><span>⚠️</span><span>${s.risk}</span></div>` : ''}
+
+        <div class="conf-selector-box">
+          <div class="cs-title">SELECT A-TARGET 1 + C-BASE CONFLUENCE</div>
+          <div class="zf-cs-grid">
+            <button class="zf-cs-btn tight active" id="zfConfBtnTight" onclick="ZoneFlip.setConfluence('tight')">💎 TIGHT (Δ ≤ 0.5)</button>
+            <button class="zf-cs-btn wide" id="zfConfBtnWide" onclick="ZoneFlip.setConfluence('wide')">↔️ WIDE GAP (Δ > 0.5)</button>
+          </div>
+        </div>
+
+        <div class="log-section">
+          <div class="log-label">LOG THIS BACKTEST IN SUPABASE (ACCUMULATES FOR FUTURE)</div>
+          <div class="zf-log-buttons">
+            <button class="zf-log-btn win" onclick="ZoneFlip.logTrade(${s.n}, 'win')">✓ WIN (F)</button>
+            <button class="zf-log-btn loss" onclick="ZoneFlip.logTrade(${s.n}, 'loss')">✕ LOSS (NF)</button>
+            <button class="zf-log-btn be" onclick="ZoneFlip.logTrade(${s.n}, 'be')">— B/E</button>
+          </div>
+          <div class="log-confirm" id="zfLogConfirm"></div>
+        </div>
+        <div class="reset-btn"><button onclick="ZoneFlip.resetTool()">Run Another Chart Reading</button></div>
+      </div>
+    `;
+  }
+
+  function resetTool(){
+    answers = [];
+    renderProgress();
+    if(openPanel === 'trail') renderTrailPills();
+    if(openPanel === 'wireframe') renderWireframe();
+    renderQuestion();
+  }
+
+  /* STORAGE & SUPABASE SYNC */
+  async function loadTrades(){
+    try{
+      const { data, error } = await supabaseClient
+        .from('zone_flip_logs')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: true });
+      
+      if(error){
+        console.warn('Supabase zone_flip_logs table error, falling back to localStorage:', error.message);
+        const local = localStorage.getItem('zone_flip_trades');
+        zfTrades = local ? JSON.parse(local) : [];
+      } else {
+        zfTrades = data || [];
+        localStorage.setItem('zone_flip_trades', JSON.stringify(zfTrades));
+      }
+    } catch(e){
+      console.error('Error loading Zone Flip trades:', e);
+      const local = localStorage.getItem('zone_flip_trades');
+      zfTrades = local ? JSON.parse(local) : [];
+    }
+    renderStats();
+  }
+
+  async function saveTradeToStorage(record){
+    zfTrades.push(record);
+    localStorage.setItem('zone_flip_trades', JSON.stringify(zfTrades));
+    
+    try{
+      const { data, error } = await supabaseClient
+        .from('zone_flip_logs')
+        .insert({
+          user_id: currentUser.id,
+          scenario: record.scenario,
+          outcome: record.outcome,
+          confluence: record.confluence,
+          answers: record.answers
+        })
+        .select()
+        .single();
+        
+      if(error) console.warn('Saved to localStorage, but Supabase insert notice:', error.message);
+      else if(data && data.id) record.supabase_id = data.id;
+    } catch(e){
+      console.warn('Supabase sync notice:', e);
+    }
+  }
+
+  async function logTrade(scenarioNum, outcome){
+    const confirmEl = document.getElementById('zfLogConfirm');
+    if(confirmEl) confirmEl.innerHTML = '<span>Saving to Supabase…</span>';
+    
+    const record = { 
+      id: Date.now() + '-' + Math.random().toString(36).slice(2,7), 
+      scenario: scenarioNum, 
+      outcome: outcome, 
+      confluence: selectedConfluence,
+      answers: [...answers],
+      ts: Date.now() 
+    };
+    
+    await saveTradeToStorage(record);
+    lastLoggedId = record.id;
+    const labelMap = { win:'WIN (F)', loss:'LOSS (NF)', be:'BREAK-EVEN' };
+    if(confirmEl){
+      confirmEl.innerHTML = `<span>✓ Logged as ${labelMap[outcome]} (${selectedConfluence.toUpperCase()})</span><button class="undo-btn" onclick="ZoneFlip.undoLastLog()">UNDO</button>`;
+    }
+    if(openPanel === 'stats') renderStats();
+  }
+
+  async function undoLastLog(){
+    if(!lastLoggedId) return;
+    const target = zfTrades.find(t => t.id === lastLoggedId);
+    zfTrades = zfTrades.filter(t => t.id !== lastLoggedId);
+    localStorage.setItem('zone_flip_trades', JSON.stringify(zfTrades));
+    
+    if(target && target.supabase_id){
+      try{ await supabaseClient.from('zone_flip_logs').delete().eq('id', target.supabase_id); } catch(e){}
+    }
+    lastLoggedId = null;
+    const confirmEl = document.getElementById('zfLogConfirm');
+    if(confirmEl) confirmEl.innerHTML = '';
+    if(openPanel === 'stats') renderStats();
+  }
+
+  async function clearLog(){
+    if(!confirm('Clear all logged Zone Flip backtest history? This cannot be undone.')) return;
+    zfTrades = [];
+    localStorage.setItem('zone_flip_trades', JSON.stringify([]));
+    try{ await supabaseClient.from('zone_flip_logs').delete().eq('user_id', currentUser.id); }catch(e){}
+    renderStats();
+  }
+
+  function triggerImport(){
+    const input = document.getElementById('zfImportFileInput');
+    if(input) input.click();
+  }
+
+  async function importData(event){
+    const file = event.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = async function(e){
+      try{
+        const content = e.target.result;
+        let importedRecords = [];
+        if(file.name.endsWith('.json')){
+          importedRecords = JSON.parse(content);
+        } else if(file.name.endsWith('.csv')){
+          const lines = content.trim().split('\n');
+          for(let i = 1; i < lines.length; i++){
+            const cols = lines[i].split(',');
+            if(cols.length >= 3){
+              const id = cols[0].replace(/"/g, '');
+              const scenario = parseInt(cols[1]);
+              const outcome = cols[2].replace(/"/g, '');
+              const confluence = cols[3] ? cols[3].replace(/"/g, '') : 'tight';
+              const ts = cols[4] ? parseInt(cols[4]) : Date.now();
+              importedRecords.push({ id, scenario, outcome, confluence, ts });
+            }
+          }
+        }
+        if(Array.isArray(importedRecords) && importedRecords.length > 0){
+          for(const rec of importedRecords){
+            await saveTradeToStorage(rec);
+          }
+          alert(`✓ Successfully imported & synced ${importedRecords.length} trade records!`);
+          renderStats();
+        } else {
+          alert('No valid trade records found in file.');
+        }
+      }catch(err){
+        alert('Error parsing file: ' + err.message);
+      }
+      event.target.value = '';
+    };
+    reader.readAsText(file);
+  }
+
+  function exportZfCsv(){
+    if(zfTrades.length === 0){ alert('No trades to export.'); return; }
+    let csv = 'ID,Scenario,Outcome,Confluence,Timestamp,Date\n';
+    zfTrades.forEach(t => {
+      const d = new Date(t.ts || Date.now()).toISOString();
+      const conf = t.confluence || 'tight';
+      csv += `"${t.id}",${t.scenario},"${t.outcome}","${conf}",${t.ts || Date.now()},"${d}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `zone_flip_backtest_${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function scenarioByNum(n){
+    return Object.values(scenarios).find(s => s.n === n);
+  }
+
+  async function renderStats(){
+    if(openPanel !== 'stats') return;
+    const el = document.getElementById('zfStatsBody');
+    if(!el) return;
+    el.innerHTML = '<div class="stats-loading">Loading performance from Supabase…</div>';
+    
+    if(zfTrades.length === 0){
+      el.innerHTML = '<div class="stats-empty">No backtest trades logged yet.<br>Log an outcome from any result screen to start tracking performance per scenario in Supabase.</div>';
+      return;
+    }
+    const agg = {};
+    for(let i=1;i<=16;i++) agg[i] = { win:0, loss:0, be:0, total:0 };
+    
+    let tightWins = 0, tightDecided = 0;
+    
+    zfTrades.forEach(t => {
+      if(!agg[t.scenario]) agg[t.scenario] = { win:0, loss:0, be:0, total:0 };
+      agg[t.scenario][t.outcome]++;
+      agg[t.scenario].total++;
+      if((t.confluence === 'tight' || !t.confluence) && (t.outcome === 'win' || t.outcome === 'loss')){
+        tightDecided++;
+        if(t.outcome === 'win') tightWins++;
+      }
+    });
+
+    const totalTrades = zfTrades.length;
+    const totalWins = zfTrades.filter(t => t.outcome === 'win').length;
+    const totalLosses = zfTrades.filter(t => t.outcome === 'loss').length;
+    const decided = totalWins + totalLosses;
+    const overallWR = decided ? Math.round((totalWins / decided) * 100) : 0;
+    const tightWR = tightDecided ? Math.round((tightWins / tightDecided) * 100) : 0;
+
+    let html = `<div class="zf-stats-summary">
+      <div class="zf-stats-summary-item"><div class="zf-ss-val">${totalTrades}</div><div class="zf-ss-lbl">LOGGED</div></div>
+      <div class="zf-stats-summary-item"><div class="zf-ss-val">${overallWR}%</div><div class="zf-ss-lbl">OVERALL WR</div></div>
+      <div class="zf-stats-summary-item"><div class="zf-ss-val">${tightWR}%</div><div class="zf-ss-lbl">TIGHT WR</div></div>
+    </div>`;
+    html += '<div class="zf-stats-rows">';
+    for(let i=1;i<=16;i++){
+      const a = agg[i];
+      const s = scenarioByNum(i);
+      if(!s) continue;
+      const dec = a.win + a.loss;
+      const wr = dec ? Math.round((a.win / dec) * 100) : null;
+      const wrText = wr !== null ? wr + '%' : '—';
+      html += `<div class="zf-stats-row">
+        <div class="zf-sr-num ${s.gold ? 'gold' : ''}">${i}</div>
+        <div class="zf-sr-info">
+          <div class="zf-sr-name">${s.glyph} ${s.cls}</div>
+          <div class="zf-sr-bar"><div class="zf-sr-bar-fill" style="width:${wr || 0}%"></div></div>
+        </div>
+        <div class="zf-sr-stats">
+          ${a.total ? `<div class="zf-sr-wr">${wrText}</div><div class="zf-sr-count">${a.total} · F:${a.win}/NF:${a.loss}/B:${a.be}</div>` : `<div class="zf-sr-count muted">No data</div>`}
+        </div>
+      </div>`;
+    }
+    html += '</div>';
+    html += `<div class="zf-stats-actions">
+      <button class="zf-import-log-btn" onclick="ZoneFlip.triggerImport()">Import File</button>
+      <button class="zf-export-log-btn" onclick="ZoneFlip.exportZfCsv()">Export CSV</button>
+      <button class="zf-clear-log-btn" onclick="ZoneFlip.clearLog()">Clear History</button>
+    </div>`;
+    el.innerHTML = html;
+  }
+
+  return {
+    setPanel,
+    renderProgress,
+    renderQuestion,
+    selectAnswer,
+    goBack,
+    setConfluence,
+    renderResult,
+    resetTool,
+    loadTrades,
+    logTrade,
+    undoLastLog,
+    clearLog,
+    triggerImport,
+    importData,
+    exportZfCsv,
+    renderStats
+  };
+})();
+
+</script>
+</body>
+</html>
+```
