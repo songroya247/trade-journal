@@ -212,9 +212,15 @@
   .loading{ text-align:center; padding:40px; color:var(--ink-soft); font-family:ui-monospace,monospace; font-size:0.8rem; }
 
   /* Main tab switcher */
-  .main-tabs{ display:flex; gap:8px; }
-  .main-tab{ font-family:ui-monospace,monospace; font-size:0.72rem; padding:8px 14px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); cursor:pointer; }
-  .main-tab.active{ background:var(--ink); color:var(--paper); }
+  .main-tabs{ display:flex; margin:0 16px 16px; border-bottom:2px solid var(--ink); }
+  .main-tab{
+    flex:1; text-align:center; padding:13px 8px; background:none; border:none;
+    font-family:ui-monospace,monospace; font-size:0.75rem; letter-spacing:0.06em; text-transform:uppercase;
+    color:var(--ink-soft); cursor:pointer; position:relative;
+  }
+  .main-tab.active{ color:var(--ink); font-weight:bold; }
+  .main-tab.active::after{ content:''; position:absolute; left:0; right:0; bottom:-2px; height:3px; background:var(--ink); }
+  .main-tab .tab-icon{ margin-right:5px; }
 
   /* ===== Zone Flip (scoped) ===== */
 
@@ -507,12 +513,13 @@
 </div>
 
 <div class="app" id="app">
-  <div style="margin:0 16px; display:flex; justify-content:space-between; align-items:center;">
-    <div class="main-tabs" id="mainTabs">
-      <button class="main-tab active" data-tab="journal">📓 Journal</button>
-      <button class="main-tab" data-tab="zoneflip">⚡ Zone Flip</button>
-    </div>
+  <div style="margin:0 16px 10px; text-align:right;">
     <span class="signout" id="signOutBtn">Sign out</span>
+  </div>
+
+  <div class="main-tabs" id="mainTabs">
+    <button class="main-tab active" data-tab="journal"><span class="tab-icon">📓</span>Journal</button>
+    <button class="main-tab" data-tab="zoneflip"><span class="tab-icon">⚡</span>Zone Flip</button>
   </div>
 
   <div id="journalTab">
@@ -1989,7 +1996,4 @@ exportConfirm.addEventListener('click', () => {
       desc:"Has price respected the C ± 0.5 zone?",
       a:{ value:"C1", tag:"C1 · HOLDS", title:"Holds", desc:"C ± 0.5 respected — no violation." },
       b:{ value:"C2", tag:"C2 · BREACH", title:"Breached", desc:"Price violated the C ± 0.5 zone." } },
-    { key:"S", tag:"STEP 2 / 4", title:"Is Space 1 & 4 open or filled?",
-      desc:"Has the structural liquidity void been mitigated?",
-      a:{ value:"S1", tag:"S1 · OPEN", title:"Open", desc:"Pt 4 did NOT touch Pt 1 (Unmitigated Void)." },
-      b:{ value:"S2", tag:"S2 · FILLED", title:"Filled", desc:"Pt 4 touched/overlapped Pt 1 (Mitigated
+    { key:"S", tag:"STEP 2 / 4", title:
