@@ -4,13 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Trade Discipline Ledger</title>
-<link rel="preconnect" href="https://cdn.jsdelivr.net">
-<link rel="preconnect" href="https://cxkpdwxvsygpdknunsdd.supabase.co">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous" defer></script>
-<script src="assets/config.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 <script>
   window.addEventListener('error', function(e){
     console.error('Page error:', e.message, 'at', e.filename + ':' + e.lineno);
@@ -32,9 +28,6 @@
   header{ padding:22px 18px 14px; border-bottom:2px solid var(--ink); background:var(--paper); position:sticky; top:0; z-index:5; }
   header h1{ margin:0; font-size:1.5rem; letter-spacing:0.02em; }
   header .sub{ font-family:ui-monospace,monospace; font-size:0.72rem; color:var(--ink-soft); letter-spacing:0.08em; text-transform:uppercase; margin-top:4px; }
-  .app-nav{ display:flex; gap:8px; margin-top:12px; }
-  .app-nav-link{ font-family:ui-monospace,monospace; font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; padding:8px 12px; border:1px solid var(--ink); color:var(--ink); text-decoration:none; background:var(--paper); }
-  .app-nav-link.active{ background:var(--ink); color:var(--paper); }
 
   /* Auth screen */
   .auth-wrap{ max-width:380px; margin:60px auto; padding:0 18px; }
@@ -64,14 +57,6 @@
 
   .app{ display:none; }
   .signout{ float:right; font-family:ui-monospace,monospace; font-size:0.68rem; color:var(--ink-soft); text-decoration:underline; cursor:pointer; }
-
-  .tabbar{ display:flex; margin:16px 16px 16px; border:1px solid var(--ink); }
-  .tab-btn{ flex:1; padding:12px 8px; background:var(--paper); color:var(--ink); border:none; border-right:1px solid var(--ink); font-family:ui-monospace,monospace; font-size:0.74rem; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; }
-  .tab-btn:last-child{ border-right:none; }
-  .tab-btn.active{ background:var(--ink); color:var(--paper); }
-  .tab-panel{ display:none; }
-  .tab-panel.active{ display:block; }
-  #zoneFlipTab.active{ display:flex; flex-direction:column; }
 
   .stats{ margin:16px; border:1px solid var(--ink); background:var(--paper-dark); padding:14px 16px; }
   .stats-title{ font-family:ui-monospace,monospace; font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:8px; }
@@ -226,8 +211,14 @@
   .lightbox-dot.active{ background:var(--paper); }
   .loading{ text-align:center; padding:40px; color:var(--ink-soft); font-family:ui-monospace,monospace; font-size:0.8rem; }
 
-  /* ==== Zone Flip tab styles ==== */
-  :root{
+  /* Main tab switcher */
+  .main-tabs{ display:flex; gap:8px; }
+  .main-tab{ font-family:ui-monospace,monospace; font-size:0.72rem; padding:8px 14px; border:1px solid var(--ink); background:var(--paper); color:var(--ink); cursor:pointer; }
+  .main-tab.active{ background:var(--ink); color:var(--paper); }
+
+  /* ===== Zone Flip (scoped) ===== */
+
+  .zoneflip-app{
     --bg: #FBFBFE;
     --panel: #FFFFFF;
     --line: #E6E4F5;
@@ -246,14 +237,9 @@
     --sans: 'Inter', sans-serif;
     --mono: 'JetBrains Mono', monospace;
   }
-  #zoneFlipTab, #zoneFlipTab *{box-sizing:border-box;}
-  #zoneFlipTab *{margin:0; padding:0;}
-  
-  
-  #zoneFlipTab ::selection{background:var(--violet); color:#fff;}
-  #zoneFlipTab button{font:inherit;}
-
-  #zoneFlipTab{
+  .zoneflip-app * {box-sizing:border-box; margin:0; padding:0;}
+  .zoneflip-app, .zoneflip-app {height:100%;}
+  .zoneflip-app {
     background:
       radial-gradient(ellipse 600px 360px at 10% -10%, rgba(91,76,255,0.09), transparent),
       radial-gradient(ellipse 600px 360px at 100% 0%, rgba(255,78,99,0.07), transparent),
@@ -261,84 +247,239 @@
     color:var(--text);
     font-family:var(--sans);
     line-height:1.45;
+  }
+  .zoneflip-app::selection {background:var(--violet); color:#fff;}
+  .zoneflip-app button {font:inherit;}
+
+  .zoneflip-app .app {
     max-width:480px;
     margin:0 auto;
-    padding:16px 4px 22px;
-  }  #zoneFlipTab .topbar{
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    padding:16px 16px 22px;
+  }
+
+  .zoneflip-app .topbar {
     display:flex; align-items:center; justify-content:space-between;
     margin-bottom:14px;
-  }  #zoneFlipTab .brand{
+  }
+  .zoneflip-app .brand {
     font-family:var(--display); font-weight:800; font-size:15px;
     display:flex; align-items:center; gap:7px;
-  }  #zoneFlipTab .brand .dot{width:6px; height:6px; border-radius:50%; background:var(--violet); animation:pulse 2s infinite;}  #zoneFlipTab .brand .tm{color:var(--violet); font-size:11px; vertical-align:top;}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(91,76,255,.5);}70%{box-shadow:0 0 0 6px rgba(91,76,255,0);}100%{box-shadow:0 0 0 0 rgba(91,76,255,0);}}  #zoneFlipTab .toggle-row{display:flex; gap:6px;}  #zoneFlipTab .trail-toggle{
+  }
+  .zoneflip-app .brand .dot {width:6px; height:6px; border-radius:50%; background:var(--violet); animation:pulse 2s infinite;}
+  .zoneflip-app .brand .tm {color:var(--violet); font-size:11px; vertical-align:top;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(91,76,255,.5);}70%{box-shadow:0 0 0 6px rgba(91,76,255,0);}100%{box-shadow:0 0 0 0 rgba(91,76,255,0);}}
+
+  .zoneflip-app .toggle-row {display:flex; gap:6px;}
+  .zoneflip-app .trail-toggle {
     font-family:var(--mono); font-size:10.5px; color:var(--muted);
     background:var(--panel); border:1px solid var(--line); border-radius:99px;
     padding:6px 11px; cursor:pointer; display:flex; align-items:center; gap:5px;
-  }  #zoneFlipTab .trail-toggle:hover{border-color:var(--violet); color:var(--violet);}  #zoneFlipTab .trail-toggle.active{border-color:var(--violet); color:var(--violet); background:var(--violet-light);}  #zoneFlipTab .trail-toggle .chev{transition:transform .2s ease; font-size:9px;}  #zoneFlipTab .trail-toggle.open .chev{transform:rotate(180deg);}  #zoneFlipTab #trail-strip, #zoneFlipTab #wireframe-strip, #zoneFlipTab #stats-strip{
+  }
+  .zoneflip-app .trail-toggle:hover {border-color:var(--violet); color:var(--violet);}
+  .zoneflip-app .trail-toggle.active {border-color:var(--violet); color:var(--violet); background:var(--violet-light);}
+  .zoneflip-app .trail-toggle .chev {transition:transform .2s ease; font-size:9px;}
+  .zoneflip-app .trail-toggle.open .chev {transform:rotate(180deg);}
+
+  .zoneflip-app #trail-strip, .zoneflip-app #wireframe-strip, .zoneflip-app #stats-strip {
     max-height:0; overflow:hidden; opacity:0;
     transition:max-height .25s ease, opacity .2s ease, margin .25s ease;
-  }  #zoneFlipTab #trail-strip.open{max-height:60px; opacity:1; margin-bottom:12px;}  #zoneFlipTab #wireframe-strip.open{max-height:180px; opacity:1; margin-bottom:12px;}  #zoneFlipTab #stats-strip.open{max-height:460px; opacity:1; margin-bottom:12px;}  #zoneFlipTab .trail-pills{display:flex; gap:6px; flex-wrap:wrap;}  #zoneFlipTab .trail-pill{
+  }
+  .zoneflip-app #trail-strip.open {max-height:60px; opacity:1; margin-bottom:12px;}
+  .zoneflip-app #wireframe-strip.open {max-height:180px; opacity:1; margin-bottom:12px;}
+  .zoneflip-app #stats-strip.open {max-height:460px; opacity:1; margin-bottom:12px;}
+
+  .zoneflip-app .trail-pills {display:flex; gap:6px; flex-wrap:wrap;}
+  .zoneflip-app .trail-pill {
     font-family:var(--mono); font-size:10.5px; padding:5px 10px; border-radius:99px;
     background:var(--violet-light); color:var(--violet); font-weight:600;
-  }  #zoneFlipTab .trail-pill.empty{background:var(--panel); border:1px dashed var(--line); color:var(--muted); font-weight:500;}  #zoneFlipTab .wireframe-card, #zoneFlipTab .stats-card{
+  }
+  .zoneflip-app .trail-pill.empty {background:var(--panel); border:1px dashed var(--line); color:var(--muted); font-weight:500;}
+
+  .zoneflip-app .wireframe-card, .zoneflip-app .stats-card {
     background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:12px 10px;
-  }  #zoneFlipTab .stats-card{padding:14px; max-height:440px; overflow-y:auto;}  #zoneFlipTab .wireframe{display:flex; align-items:center; gap:2px; overflow-x:auto;}  #zoneFlipTab .wf-col{display:flex; flex-direction:column; gap:5px; min-width:64px; flex:1;}  #zoneFlipTab .wf-col-label{font-family:var(--mono); font-size:8px; color:var(--muted); text-align:center; letter-spacing:.05em; margin-bottom:2px;}  #zoneFlipTab .wf-node{
+  }
+  .zoneflip-app .stats-card {padding:14px; max-height:440px; overflow-y:auto;}
+
+  .zoneflip-app .wireframe {display:flex; align-items:center; gap:2px; overflow-x:auto;}
+  .zoneflip-app .wf-col {display:flex; flex-direction:column; gap:5px; min-width:64px; flex:1;}
+  .zoneflip-app .wf-col-label {font-family:var(--mono); font-size:8px; color:var(--muted); text-align:center; letter-spacing:.05em; margin-bottom:2px;}
+  .zoneflip-app .wf-node {
     border-radius:7px; padding:5px 3px; text-align:center;
     font-family:var(--mono); font-size:9.5px; font-weight:700;
     border:1.5px dashed var(--line); color:var(--muted); background:var(--bg);
     transition:all .2s ease;
-  }  #zoneFlipTab .wf-node.chosen{border-style:solid; color:#fff;}  #zoneFlipTab .wf-node.chosen.c-violet{background:var(--violet); border-color:var(--violet);}  #zoneFlipTab .wf-node.chosen.c-emerald{background:var(--emerald); border-color:var(--emerald);}  #zoneFlipTab .wf-node.chosen.c-coral{background:var(--coral); border-color:var(--coral);}  #zoneFlipTab .wf-node.discarded{opacity:.3; text-decoration:line-through;}  #zoneFlipTab .wf-arrow{color:var(--line); font-size:13px; flex-shrink:0; padding:0 1px;}  #zoneFlipTab .wf-arrow.active{color:var(--violet);}  #zoneFlipTab .wf-result-node{
+  }
+  .zoneflip-app .wf-node.chosen {border-style:solid; color:#fff;}
+  .zoneflip-app .wf-node.chosen.c-violet {background:var(--violet); border-color:var(--violet);}
+  .zoneflip-app .wf-node.chosen.c-emerald {background:var(--emerald); border-color:var(--emerald);}
+  .zoneflip-app .wf-node.chosen.c-coral {background:var(--coral); border-color:var(--coral);}
+  .zoneflip-app .wf-node.chosen.c-amber {background:var(--amber); border-color:var(--amber);}
+  .zoneflip-app .wf-node.discarded {opacity:.3; text-decoration:line-through;}
+  .zoneflip-app .wf-arrow {color:var(--line); font-size:13px; flex-shrink:0; padding:0 1px;}
+  .zoneflip-app .wf-arrow.active {color:var(--violet);}
+  .zoneflip-app .wf-result-node {
     border-radius:7px; padding:5px 6px; text-align:center;
     font-family:var(--mono); font-size:9.5px; font-weight:700;
     border:1.5px dashed var(--line); color:var(--muted); background:var(--bg);
-  }  #zoneFlipTab .wf-result-node.ready{border-style:solid; border-color:var(--gold); background:var(--gold); color:#3a2a00;}  #zoneFlipTab .stats-summary{display:flex; gap:6px; margin-bottom:12px;}  #zoneFlipTab .stats-summary-item{flex:1; background:var(--violet-light); border-radius:10px; padding:8px 4px; text-align:center;}  #zoneFlipTab .ss-val{font-family:var(--display); font-weight:800; font-size:15px; color:var(--violet); line-height:1.1;}  #zoneFlipTab .ss-lbl{font-family:var(--mono); font-size:7.5px; color:var(--muted); letter-spacing:.04em; margin-top:3px;}  #zoneFlipTab .stats-rows{display:flex; flex-direction:column;}  #zoneFlipTab .stats-row{display:flex; align-items:center; gap:9px; padding:7px 0; border-bottom:1px solid var(--line);}  #zoneFlipTab .stats-row:last-child{border-bottom:none;}  #zoneFlipTab .sr-num{width:22px; height:22px; border-radius:6px; background:var(--violet); color:#fff; font-family:var(--mono); font-weight:700; font-size:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}  #zoneFlipTab .sr-num.gold{background:var(--gold); color:#3a2a00;}  #zoneFlipTab .sr-info{flex:1; min-width:0;}  #zoneFlipTab .sr-name{font-size:11px; font-weight:600; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}  #zoneFlipTab .sr-bar{height:4px; background:var(--line); border-radius:99px; overflow:hidden;}  #zoneFlipTab .sr-bar-fill{height:100%; background:var(--emerald); border-radius:99px; transition:width .3s ease;}  #zoneFlipTab .sr-stats{text-align:right; flex-shrink:0;}  #zoneFlipTab .sr-wr{font-family:var(--mono); font-weight:700; font-size:11.5px; color:var(--emerald);}  #zoneFlipTab .sr-count{font-family:var(--mono); font-size:8px; color:var(--muted); margin-top:2px; white-space:nowrap;}  #zoneFlipTab .sr-count.muted{color:var(--line); font-size:8.5px;}  #zoneFlipTab .zf-stats-empty, #zoneFlipTab .zf-stats-loading{font-size:11.5px; color:var(--muted); text-align:center; padding:18px 8px; line-height:1.5;}  #zoneFlipTab .stats-actions{display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px; margin-top:10px;}  #zoneFlipTab .clear-log-btn, #zoneFlipTab .export-log-btn, #zoneFlipTab .import-log-btn{
+  }
+  .zoneflip-app .wf-result-node.ready {border-style:solid; border-color:var(--gold); background:var(--gold); color:#3a2a00;}
+
+  .zoneflip-app .stats-summary {display:flex; gap:6px; margin-bottom:12px;}
+  .zoneflip-app .stats-summary-item {flex:1; background:var(--violet-light); border-radius:10px; padding:8px 4px; text-align:center;}
+  .zoneflip-app .ss-val {font-family:var(--display); font-weight:800; font-size:15px; color:var(--violet); line-height:1.1;}
+  .zoneflip-app .ss-lbl {font-family:var(--mono); font-size:7.5px; color:var(--muted); letter-spacing:.04em; margin-top:3px;}
+  .zoneflip-app .stats-rows {display:flex; flex-direction:column;}
+  .zoneflip-app .stats-row {display:flex; align-items:center; gap:9px; padding:7px 0; border-bottom:1px solid var(--line);}
+  .zoneflip-app .stats-row:last-child {border-bottom:none;}
+  .zoneflip-app .sr-num {width:22px; height:22px; border-radius:6px; background:var(--violet); color:#fff; font-family:var(--mono); font-weight:700; font-size:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .zoneflip-app .sr-num.gold {background:var(--gold); color:#3a2a00;}
+  .zoneflip-app .sr-info {flex:1; min-width:0;}
+  .zoneflip-app .sr-name {font-size:11px; font-weight:600; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .zoneflip-app .sr-bar {height:4px; background:var(--line); border-radius:99px; overflow:hidden;}
+  .zoneflip-app .sr-bar-fill {height:100%; background:var(--emerald); border-radius:99px; transition:width .3s ease;}
+  .zoneflip-app .sr-stats {text-align:right; flex-shrink:0;}
+  .zoneflip-app .sr-wr {font-family:var(--mono); font-weight:700; font-size:11.5px; color:var(--emerald);}
+  .zoneflip-app .sr-count {font-family:var(--mono); font-size:8px; color:var(--muted); margin-top:2px; white-space:nowrap;}
+  .zoneflip-app .sr-count.muted {color:var(--line); font-size:8.5px;}
+  .zoneflip-app .stats-empty, .zoneflip-app .stats-loading {font-size:11.5px; color:var(--muted); text-align:center; padding:18px 8px; line-height:1.5;}
+
+  .zoneflip-app .stats-actions {display:grid; grid-template-columns:1fr 1fr 1fr; gap:5px; margin-top:10px;}
+  .zoneflip-app .clear-log-btn, .zoneflip-app .export-log-btn, .zoneflip-app .import-log-btn {
     padding:8px 3px; border-radius:10px; font-family:var(--mono); font-size:9px; font-weight:700; cursor:pointer; text-align:center;
-  }  #zoneFlipTab .clear-log-btn{border:1px dashed var(--coral); background:var(--coral-light); color:var(--coral);}  #zoneFlipTab .export-log-btn{border:1px solid var(--violet); background:var(--violet-light); color:var(--violet);}  #zoneFlipTab .import-log-btn{border:1px solid var(--emerald); background:var(--emerald-light); color:var(--emerald);}  #zoneFlipTab .progress{display:flex; gap:6px; margin-bottom:20px;}  #zoneFlipTab .progress-step{flex:1; height:5px; border-radius:99px; background:var(--line); overflow:hidden; position:relative;}  #zoneFlipTab .progress-step .fill{position:absolute; inset:0; background:var(--violet); border-radius:99px; transform:scaleX(0); transform-origin:left; transition:transform .45s cubic-bezier(.65,0,.35,1);}  #zoneFlipTab .progress-step.done .fill{transform:scaleX(1); background:var(--emerald);}  #zoneFlipTab .progress-step.active .fill{transform:scaleX(1);}  #zoneFlipTab .card{
+  }
+  .zoneflip-app .clear-log-btn {border:1px dashed var(--coral); background:var(--coral-light); color:var(--coral);}
+  .zoneflip-app .export-log-btn {border:1px solid var(--violet); background:var(--violet-light); color:var(--violet);}
+  .zoneflip-app .import-log-btn {border:1px solid var(--emerald); background:var(--emerald-light); color:var(--emerald);}
+
+  .zoneflip-app .progress {display:flex; gap:6px; margin-bottom:20px;}
+  .zoneflip-app .progress-step {flex:1; height:5px; border-radius:99px; background:var(--line); overflow:hidden; position:relative;}
+  .zoneflip-app .progress-step .fill {position:absolute; inset:0; background:var(--violet); border-radius:99px; transform:scaleX(0); transform-origin:left; transition:transform .45s cubic-bezier(.65,0,.35,1);}
+  .zoneflip-app .progress-step.done .fill {transform:scaleX(1); background:var(--emerald);}
+  .zoneflip-app .progress-step.active .fill {transform:scaleX(1);}
+
+  .zoneflip-app .card {
     background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:22px 20px;
     box-shadow:0 16px 40px -18px rgba(91,76,255,0.18); flex:1; display:flex; flex-direction:column;
-  }  #zoneFlipTab .q-head{display:flex; align-items:center; gap:8px; margin-bottom:10px;}  #zoneFlipTab .back-btn{
+  }
+
+  .zoneflip-app .q-head {display:flex; align-items:center; gap:8px; margin-bottom:10px;}
+  .zoneflip-app .back-btn {
     width:26px; height:26px; border-radius:8px; border:1px solid var(--line);
     background:var(--panel); color:var(--muted); cursor:pointer;
     display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0;
-  }  #zoneFlipTab .back-btn:disabled{opacity:0; pointer-events:none;}  #zoneFlipTab .back-btn:hover{border-color:var(--violet); color:var(--violet);}  #zoneFlipTab .q-tag{font-family:var(--mono); font-size:10.5px; color:var(--muted); letter-spacing:.1em;}  #zoneFlipTab .q-title{font-family:var(--display); font-weight:700; font-size:19px; line-height:1.25; margin-bottom:6px;}  #zoneFlipTab .q-desc{color:var(--muted); font-size:13px; margin-bottom:18px;}  #zoneFlipTab .option-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; flex:1;}  #zoneFlipTab .option-btn{
+  }
+  .zoneflip-app .back-btn:disabled {opacity:0; pointer-events:none;}
+  .zoneflip-app .back-btn:hover {border-color:var(--violet); color:var(--violet);}
+  .zoneflip-app .q-tag {font-family:var(--mono); font-size:10.5px; color:var(--muted); letter-spacing:.1em;}
+
+  .zoneflip-app .q-title {font-family:var(--display); font-weight:700; font-size:19px; line-height:1.25; margin-bottom:6px;}
+  .zoneflip-app .q-desc {color:var(--muted); font-size:13px; margin-bottom:18px;}
+
+  .zoneflip-app .option-grid {display:grid; grid-template-columns:1fr 1fr; gap:10px; flex:1;}
+  .zoneflip-app .option-btn {
     text-align:left; background:var(--panel); border:1.5px solid var(--line); border-radius:14px;
     padding:14px 12px; cursor:pointer; transition:all .15s ease; display:flex; flex-direction:column; min-height:0;
-  }  #zoneFlipTab .option-btn:active{transform:scale(.97);}  #zoneFlipTab .option-btn.a{border-color:rgba(14,190,127,0.25);}  #zoneFlipTab .option-btn.b{border-color:rgba(255,78,99,0.25);}  #zoneFlipTab .option-btn.a:hover, #zoneFlipTab .option-btn.a:focus-visible{border-color:var(--emerald); background:var(--emerald-light);}  #zoneFlipTab .option-btn.b:hover, #zoneFlipTab .option-btn.b:focus-visible{border-color:var(--coral); background:var(--coral-light);}  #zoneFlipTab .option-btn .otag{
+  }
+  .zoneflip-app .option-btn:active {transform:scale(.97);}
+  .zoneflip-app .option-btn.a {border-color:rgba(14,190,127,0.25);}
+  .zoneflip-app .option-btn.b {border-color:rgba(255,78,99,0.25);}
+  .zoneflip-app .option-btn.a:hover, .zoneflip-app .option-btn.a:focus-visible {border-color:var(--emerald); background:var(--emerald-light);}
+  .zoneflip-app .option-btn.b:hover, .zoneflip-app .option-btn.b:focus-visible {border-color:var(--coral); background:var(--coral-light);}
+  .zoneflip-app .option-btn .otag {
     display:inline-block; font-family:var(--mono); font-size:9.5px; font-weight:700;
     padding:2px 7px; border-radius:6px; margin-bottom:8px; letter-spacing:.04em; align-self:flex-start;
-  }  #zoneFlipTab .option-btn.a .otag{background:var(--emerald-light); color:var(--emerald);}  #zoneFlipTab .option-btn.b .otag{background:var(--coral-light); color:var(--coral);}  #zoneFlipTab .option-btn .otitle{font-weight:700; font-size:13.5px; margin-bottom:5px; line-height:1.25;}  #zoneFlipTab .option-btn .odesc{font-size:11.3px; color:var(--muted); line-height:1.45;}  #zoneFlipTab .candidates-hint{margin-top:14px; font-family:var(--mono); font-size:10.5px; color:var(--muted); text-align:center;}  #zoneFlipTab .candidates-hint b{color:var(--violet);}  #zoneFlipTab #result-panel{display:none; flex:1; flex-direction:column;}  #zoneFlipTab .rec-badge-box{margin-bottom:12px; padding:10px 12px; border-radius:10px; font-family:var(--mono); font-size:11px; font-weight:800; text-align:center; letter-spacing:.04em;}
-  #zoneFlipTab .rec-badge-box.base{background:var(--emerald-light); color:var(--emerald); border:1.5px solid var(--emerald);}
-  #zoneFlipTab .rec-badge-box.extreme{background:var(--coral-light); color:var(--coral); border:1.5px solid var(--coral);}
-  #zoneFlipTab .result-header{display:flex; align-items:center; gap:12px; margin-bottom:12px;}  #zoneFlipTab .result-num{
+  }
+  .zoneflip-app .option-btn.a .otag {background:var(--emerald-light); color:var(--emerald);}
+  .zoneflip-app .option-btn.b .otag {background:var(--coral-light); color:var(--coral);}
+  .zoneflip-app .option-btn .otitle {font-weight:700; font-size:13.5px; margin-bottom:5px; line-height:1.25;}
+  .zoneflip-app .option-btn .odesc {font-size:11.3px; color:var(--muted); line-height:1.45;}
+
+  .zoneflip-app .candidates-hint {margin-top:14px; font-family:var(--mono); font-size:10.5px; color:var(--muted); text-align:center;}
+  .zoneflip-app .candidates-hint b {color:var(--violet);}
+
+  .zoneflip-app #result-panel {display:none; flex:1; flex-direction:column;}
+  .zoneflip-app .result-header {display:flex; align-items:center; gap:12px; margin-bottom:12px;}
+  .zoneflip-app .result-num {
     font-family:var(--display); font-weight:800; font-size:26px; width:48px; height:48px; border-radius:13px; flex-shrink:0;
     display:flex; align-items:center; justify-content:center; background:var(--violet); color:#fff;
-  }  #zoneFlipTab .result-num.gold{background:var(--gold); color:#3a2a00;}  #zoneFlipTab .result-title .rt-tag{font-family:var(--mono); font-size:10px; color:var(--muted); letter-spacing:.08em;}  #zoneFlipTab .result-title h2{font-family:var(--display); font-size:17.5px; font-weight:700; margin-top:2px; line-height:1.25;}  #zoneFlipTab .result-narrative{font-size:12.5px; color:var(--muted); line-height:1.5; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid var(--line);}  #zoneFlipTab .result-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;}  #zoneFlipTab .result-block{border-radius:12px; padding:10px 11px;}  #zoneFlipTab .result-block.zone{background:var(--violet-light);}  #zoneFlipTab .result-block.target{background:var(--emerald-light);}  #zoneFlipTab .result-block.sl{background:var(--coral-light);}  #zoneFlipTab .result-block.conf{background:var(--amber-light);}  #zoneFlipTab .result-block .rb-label{font-family:var(--mono); font-size:8.5px; letter-spacing:.08em; color:var(--muted); margin-bottom:3px; text-transform:uppercase;}  #zoneFlipTab .result-block.zone .rb-label{color:var(--violet);}  #zoneFlipTab .result-block.target .rb-label{color:var(--emerald);}  #zoneFlipTab .result-block.sl .rb-label{color:var(--coral);}  #zoneFlipTab .result-block.conf .rb-label{color:#8a5b00;}  #zoneFlipTab .result-block .rb-value{font-size:11.8px; font-weight:600; line-height:1.35;}  #zoneFlipTab .result-risk{
+  }
+  .zoneflip-app .result-num.gold {background:var(--gold); color:#3a2a00;}
+  .zoneflip-app .result-title .rt-tag {font-family:var(--mono); font-size:10px; color:var(--muted); letter-spacing:.08em;}
+  .zoneflip-app .result-title h2 {font-family:var(--display); font-size:17.5px; font-weight:700; margin-top:2px; line-height:1.25;}
+
+  .zoneflip-app .result-narrative {font-size:12.5px; color:var(--muted); line-height:1.5; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid var(--line);}
+
+  .zoneflip-app .result-grid {display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px;}
+  .zoneflip-app .result-block {border-radius:12px; padding:10px 11px;}
+  .zoneflip-app .result-block.zone {background:var(--violet-light);}
+  .zoneflip-app .result-block.target {background:var(--emerald-light);}
+  .zoneflip-app .result-block.sl {background:var(--coral-light);}
+  .zoneflip-app .result-block.conf {background:var(--amber-light);}
+  .zoneflip-app .result-block .rb-label {font-family:var(--mono); font-size:8.5px; letter-spacing:.08em; color:var(--muted); margin-bottom:3px; text-transform:uppercase;}
+  .zoneflip-app .result-block.zone .rb-label {color:var(--violet);}
+  .zoneflip-app .result-block.target .rb-label {color:var(--emerald);}
+  .zoneflip-app .result-block.sl .rb-label {color:var(--coral);}
+  .zoneflip-app .result-block.conf .rb-label {color:#8a5b00;}
+  .zoneflip-app .result-block .rb-value {font-size:11.8px; font-weight:600; line-height:1.35;}
+
+  .zoneflip-app .result-risk {
     background:var(--amber-light); border-radius:12px; padding:9px 11px;
     display:flex; gap:7px; align-items:flex-start; margin-top:6px; font-size:11.5px; color:#7a5200; line-height:1.4;
-  }  #zoneFlipTab .conf-selector-box{margin-top:12px; padding-top:12px; border-top:1px dashed var(--line);}  #zoneFlipTab .cs-title{font-family:var(--mono); font-size:9px; color:var(--muted); letter-spacing:.07em; margin-bottom:7px; text-align:center;}  #zoneFlipTab .cs-grid{display:grid; grid-template-columns:1fr 1fr; gap:6px;}  #zoneFlipTab .cs-btn{
+  }
+
+  .zoneflip-app .conf-selector-box {margin-top:12px; padding-top:12px; border-top:1px dashed var(--line);}
+  .zoneflip-app .cs-title {font-family:var(--mono); font-size:9px; color:var(--muted); letter-spacing:.07em; margin-bottom:7px; text-align:center;}
+  .zoneflip-app .cs-grid {display:grid; grid-template-columns:1fr 1fr; gap:6px;}
+  .zoneflip-app .cs-btn {
     padding:8px 6px; border-radius:10px; border:1.5px solid var(--line); background:var(--panel);
     font-family:var(--mono); font-size:9.5px; font-weight:700; color:var(--muted); cursor:pointer; text-align:center; transition:all .15s ease;
-  }  #zoneFlipTab .cs-btn.active.tight{border-color:var(--violet); background:var(--violet-light); color:var(--violet);}  #zoneFlipTab .cs-btn.active.wide{border-color:var(--amber); background:var(--amber-light); color:#8a5b00;}  #zoneFlipTab .log-section{margin-top:12px; padding-top:12px; border-top:1px dashed var(--line);}  #zoneFlipTab .log-label{font-family:var(--mono); font-size:9.5px; color:var(--muted); letter-spacing:.07em; margin-bottom:8px; text-align:center;}  #zoneFlipTab .log-buttons{display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px;}  #zoneFlipTab .log-btn{
+  }
+  .zoneflip-app .cs-btn.active.tight {border-color:var(--violet); background:var(--violet-light); color:var(--violet);}
+  .zoneflip-app .cs-btn.active.wide {border-color:var(--amber); background:var(--amber-light); color:#8a5b00;}
+
+  .zoneflip-app .log-section {margin-top:12px; padding-top:12px; border-top:1px dashed var(--line);}
+  .zoneflip-app .log-label {font-family:var(--mono); font-size:9.5px; color:var(--muted); letter-spacing:.07em; margin-bottom:8px; text-align:center;}
+  .zoneflip-app .log-buttons {display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px;}
+  .zoneflip-app .log-btn {
     padding:10px 3px; border-radius:11px; border:1.5px solid var(--line); background:var(--panel);
     font-family:var(--mono); font-weight:700; font-size:10.5px; cursor:pointer; text-align:center; transition:all .15s ease;
-  }  #zoneFlipTab .log-btn:active{transform:scale(.95);}  #zoneFlipTab .log-btn.win{color:var(--emerald); border-color:rgba(14,190,127,.3);}  #zoneFlipTab .log-btn.win:hover{background:var(--emerald-light); border-color:var(--emerald);}  #zoneFlipTab .log-btn.loss{color:var(--coral); border-color:rgba(255,78,99,.3);}  #zoneFlipTab .log-btn.loss:hover{background:var(--coral-light); border-color:var(--coral);}  #zoneFlipTab .log-btn.be{color:var(--muted); border-color:var(--line);}  #zoneFlipTab .log-btn.be:hover{background:var(--bg); border-color:var(--muted);}  #zoneFlipTab .log-confirm{margin-top:8px; font-size:11px; color:var(--muted); text-align:center; display:flex; align-items:center; justify-content:center; gap:7px; min-height:14px;}  #zoneFlipTab .undo-btn{font-family:var(--mono); font-size:9.5px; color:var(--violet); background:none; border:none; text-decoration:underline; cursor:pointer;}  #zoneFlipTab .reset-btn{margin-top:auto; padding-top:12px;}  #zoneFlipTab .reset-btn button{
-    width:100%; padding:12px; border-radius:12px; background:var(--text); color:#fff; border:none; font-weight:600; font-size:13.5px; cursor:pointer;
-  }  #zoneFlipTab .reset-btn button:hover{opacity:.85;}  #zoneFlipTab .fade-in{animation:fadeIn .3s ease both;}
-  @keyframes fadeIn{from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);}}
+  }
+  .zoneflip-app .log-btn:active {transform:scale(.95);}
+  .zoneflip-app .log-btn.win {color:var(--emerald); border-color:rgba(14,190,127,.3);}
+  .zoneflip-app .log-btn.win:hover {background:var(--emerald-light); border-color:var(--emerald);}
+  .zoneflip-app .log-btn.loss {color:var(--coral); border-color:rgba(255,78,99,.3);}
+  .zoneflip-app .log-btn.loss:hover {background:var(--coral-light); border-color:var(--coral);}
+  .zoneflip-app .log-btn.be {color:var(--muted); border-color:var(--line);}
+  .zoneflip-app .log-btn.be:hover {background:var(--bg); border-color:var(--muted);}
+  .zoneflip-app .log-confirm {margin-top:8px; font-size:11px; color:var(--muted); text-align:center; display:flex; align-items:center; justify-content:center; gap:7px; min-height:14px;}
+  .zoneflip-app .undo-btn {font-family:var(--mono); font-size:9.5px; color:var(--violet); background:none; border:none; text-decoration:underline; cursor:pointer;}
 
+  .zoneflip-app .reset-btn {margin-top:auto; padding-top:12px;}
+  .zoneflip-app .reset-btn button {
+    width:100%; padding:12px; border-radius:12px; background:var(--text); color:#fff; border:none; font-weight:600; font-size:13.5px; cursor:pointer;
+  }
+  .zoneflip-app .reset-btn button:hover {opacity:.85;}
+
+  .zoneflip-app .fade-in {animation:fadeIn .3s ease both;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:translateY(0);}}
 
 </style>
 </head>
 <body>
 
+<!-- ====== FILL THESE IN ====== -->
+<script>
+  const SUPABASE_URL = "https://cxkpdwxvsygpdknunsdd.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4a3Bkd3h2c3lncGRrbnVuc2RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NzIxNjksImV4cCI6MjEwMjE0ODE2OX0.BuABs2ZyplpVd2bf8SqAVy1Rr_nl9mMnfsBiZ2YHDK0";
+</script>
+<!-- ============================ -->
+
 <header>
   <h1>Trade Discipline Ledger</h1>
   <div class="sub">Execution + Psychology Log</div>
-  <nav class="app-nav">
-    <a href="index.html" class="app-nav-link active">📒 Ledger</a>
-    <a href="zone-flip.html" class="app-nav-link">🎯 Zone Flip</a>
-  </nav>
 </header>
 
 <div class="auth-wrap" id="authWrap">
@@ -366,15 +507,15 @@
 </div>
 
 <div class="app" id="app">
-  <div style="margin:0 16px;"><span class="signout" id="signOutBtn">Sign out</span></div>
-
-  <div class="tabbar" id="tabBar">
-    <button class="tab-btn active" data-tab="ledgerTabPanel" type="button">📒 Ledger</button>
-    <button class="tab-btn" data-tab="zoneFlipTab" type="button">🎯 Zone Flip</button>
+  <div style="margin:0 16px; display:flex; justify-content:space-between; align-items:center;">
+    <div class="main-tabs" id="mainTabs">
+      <button class="main-tab active" data-tab="journal">📓 Journal</button>
+      <button class="main-tab" data-tab="zoneflip">⚡ Zone Flip</button>
+    </div>
+    <span class="signout" id="signOutBtn">Sign out</span>
   </div>
 
-  <div class="tab-panel active" id="ledgerTabPanel">
-
+  <div id="journalTab">
   <div class="stats" id="statsBox">
     <div class="stats-title">Overall — Disciplined vs Undisciplined</div>
     <div id="statsContent"><div class="stats-empty">Log your first trade to see stats.</div></div>
@@ -522,43 +663,43 @@
   </div>
 
   <div class="tickets" id="ticketsList"><div class="loading">Loading ledger...</div></div>
-
   </div>
-  <!-- /ledgerTabPanel -->
 
-  <div class="tab-panel" id="zoneFlipTab">
+  <div id="zoneflipTab" style="display:none;">
+    <div class="zoneflip-app">
+      <div class="app">
 
-  <div class="topbar">
-    <div class="brand"><span class="dot"></span>ZONE FLIP<span class="tm">™</span></div>
-    <div class="toggle-row">
-      <button class="trail-toggle" id="statsToggle" onclick="ZoneFlip.setPanel('stats')"><span>STATS</span><span class="chev">▾</span></button>
-      <button class="trail-toggle" id="wireframeToggle" onclick="ZoneFlip.setPanel('wireframe')"><span>PATH</span><span class="chev">▾</span></button>
-      <button class="trail-toggle" id="trailToggle" onclick="ZoneFlip.setPanel('trail')"><span id="trailToggleLabel">STEPS</span><span class="chev">▾</span></button>
+        <div class="topbar">
+          <div class="brand"><span class="dot"></span>ZONE FLIP<span class="tm">™</span></div>
+          <div class="toggle-row">
+            <button class="trail-toggle" id="statsToggle" onclick="ZoneFlip.setPanel('stats')"><span>STATS</span><span class="chev">▾</span></button>
+            <button class="trail-toggle" id="wireframeToggle" onclick="ZoneFlip.setPanel('wireframe')"><span>PATH</span><span class="chev">▾</span></button>
+            <button class="trail-toggle" id="trailToggle" onclick="ZoneFlip.setPanel('trail')"><span id="trailToggleLabel">STEPS</span><span class="chev">▾</span></button>
+          </div>
+        </div>
+
+        <div id="stats-strip"><div class="stats-card" id="statsBody"></div></div>
+        <div id="wireframe-strip"><div class="wireframe-card"><div class="wireframe" id="wireframeDiagram"></div></div></div>
+        <div id="trail-strip"><div class="trail-pills" id="trailPills"></div></div>
+
+        <div class="progress">
+          <div class="progress-step" id="pstep-0"><div class="fill"></div></div>
+          <div class="progress-step" id="pstep-1"><div class="fill"></div></div>
+          <div class="progress-step" id="pstep-2"><div class="fill"></div></div>
+          <div class="progress-step" id="pstep-3"><div class="fill"></div></div>
+        </div>
+
+        <div class="card">
+          <div id="question-panel"></div>
+          <div id="result-panel"></div>
+        </div>
+
+        <!-- Hidden File Input for Importing CSV/JSON -->
+        <input type="file" id="importFileInput" accept=".json,.csv" style="display:none" onchange="ZoneFlip.importData(event)">
+
+      </div>
     </div>
   </div>
-
-  <div id="stats-strip"><div class="stats-card" id="statsBody"></div></div>
-  <div id="wireframe-strip"><div class="wireframe-card"><div class="wireframe" id="wireframeDiagram"></div></div></div>
-  <div id="trail-strip"><div class="trail-pills" id="trailPills"></div></div>
-
-  <div class="progress">
-    <div class="progress-step" id="pstep-0"><div class="fill"></div></div>
-    <div class="progress-step" id="pstep-1"><div class="fill"></div></div>
-    <div class="progress-step" id="pstep-2"><div class="fill"></div></div>
-    <div class="progress-step" id="pstep-3"><div class="fill"></div></div>
-  </div>
-
-  <div class="card">
-    <div id="question-panel"></div>
-    <div id="result-panel"></div>
-  </div>
-
-  <!-- Hidden File Input for Importing CSV/JSON -->
-  <input type="file" id="importFileInput" accept=".json,.csv" style="display:none" onchange="ZoneFlip.importData(event)">
-
-  </div>
-  <!-- /zoneFlipTab -->
-
 </div>
 
 <div class="lightbox" id="lightbox">
@@ -585,8 +726,7 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function(){
-// supabaseClient comes from assets/config.js (loaded in <head>)
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const QUESTIONS = [
   { key:'setupOccurred', label:'Setup actually occurred', goodWhen:true, phase:'entry', stage:'Setup' },
@@ -731,6 +871,16 @@ authSubmit.addEventListener('click', async () => {
 
 document.getElementById('signOutBtn').addEventListener('click', async () => {
   await supabaseClient.auth.signOut();
+});
+
+document.querySelectorAll('.main-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = btn.dataset.tab;
+    document.getElementById('journalTab').style.display = tab === 'journal' ? 'block' : 'none';
+    document.getElementById('zoneflipTab').style.display = tab === 'zoneflip' ? 'block' : 'none';
+  });
 });
 
 supabaseClient.auth.onAuthStateChange((event, session) => {
@@ -1828,22 +1978,18 @@ exportConfirm.addEventListener('click', () => {
   exportToCsv(filtered, from, to);
   exportPanel.classList.remove('open');
 });
+</script>
 
+<script>
+(function(){
+  'use strict';
 
-// ---- Tabs ----
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(btn.dataset.tab).classList.add('active');
-  });
-});
-
-// ---- Zone Flip tab ----
-// ---------------- Zone Flip app ----------------
-const scenarios = {
-  // --- P1: Point 5 Failed / Equal ($5 <= 3) ---
-  "C1-S1-M1-P1": { n:1, gold:false, glyph:"⚡", cls:"Class I Scalp (Pt 5 Failed)", base:true,
-    narrative:"Channel geometry is balanced, but Space 1 & 4 is open. Point 5 failed ($5 ≤ 3) — energy is contained at C for an immediate scalp.",
-    zone:"Point C Zone", target:"Short-term scalp to Target 1 / Midpoint B.", sl:"Beyond C ±
+  const questions = [
+    { key:"C", tag:"STEP 1 / 4", title:"Is Point C holding or breached?",
+      desc:"Has price respected the C ± 0.5 zone?",
+      a:{ value:"C1", tag:"C1 · HOLDS", title:"Holds", desc:"C ± 0.5 respected — no violation." },
+      b:{ value:"C2", tag:"C2 · BREACH", title:"Breached", desc:"Price violated the C ± 0.5 zone." } },
+    { key:"S", tag:"STEP 2 / 4", title:"Is Space 1 & 4 open or filled?",
+      desc:"Has the structural liquidity void been mitigated?",
+      a:{ value:"S1", tag:"S1 · OPEN", title:"Open", desc:"Pt 4 did NOT touch Pt 1 (Unmitigated Void)." },
+      b:{ value:"S2", tag:"S2 · FILLED", title:"Filled", desc:"Pt 4 touched/overlapped Pt 1 (Mitigated
