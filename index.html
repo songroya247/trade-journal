@@ -10,7 +10,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous" defer></script>
-<script src="assets/config.js" defer></script>
 <script>
   window.addEventListener('error', function(e){
     console.error('Page error:', e.message, 'at', e.filename + ':' + e.lineno);
@@ -32,9 +31,6 @@
   header{ padding:22px 18px 14px; border-bottom:2px solid var(--ink); background:var(--paper); position:sticky; top:0; z-index:5; }
   header h1{ margin:0; font-size:1.5rem; letter-spacing:0.02em; }
   header .sub{ font-family:ui-monospace,monospace; font-size:0.72rem; color:var(--ink-soft); letter-spacing:0.08em; text-transform:uppercase; margin-top:4px; }
-  .app-nav{ display:flex; gap:8px; margin-top:12px; }
-  .app-nav-link{ font-family:ui-monospace,monospace; font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; padding:8px 12px; border:1px solid var(--ink); color:var(--ink); text-decoration:none; background:var(--paper); }
-  .app-nav-link.active{ background:var(--ink); color:var(--paper); }
 
   /* Auth screen */
   .auth-wrap{ max-width:380px; margin:60px auto; padding:0 18px; }
@@ -335,10 +331,6 @@
 <header>
   <h1>Trade Discipline Ledger</h1>
   <div class="sub">Execution + Psychology Log</div>
-  <nav class="app-nav">
-    <a href="index.html" class="app-nav-link active">📒 Ledger</a>
-    <a href="zone-flip.html" class="app-nav-link">🎯 Zone Flip</a>
-  </nav>
 </header>
 
 <div class="auth-wrap" id="authWrap">
@@ -586,7 +578,10 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function(){
-// supabaseClient comes from assets/config.js (loaded in <head>)
+// ==== Supabase config ====
+const SUPABASE_URL = "https://cxkpdwxvsygpdknunsdd.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN4a3Bkd3h2c3lncGRrbnVuc2RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NzIxNjksImV4cCI6MjEwMjE0ODE2OX0.BuABs2ZyplpVd2bf8SqAVy1Rr_nl9mMnfsBiZ2YHDK0";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const QUESTIONS = [
   { key:'setupOccurred', label:'Setup actually occurred', goodWhen:true, phase:'entry', stage:'Setup' },
